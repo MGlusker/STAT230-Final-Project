@@ -1,5 +1,5 @@
-## STAT230-Final-Project
+# STAT230-Final-Project
 
-# Oliver Baldwin Edwards
-# Noah Solomon 
-# Martin Gluskr
+## **Oliver Baldwin Edwards**
+## **Noah Solomon** 
+#### ***Martin Gluskr***
