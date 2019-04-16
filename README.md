@@ -2,4 +2,4 @@
 
 ## **Oliver Baldwin Edwards**
 ## **Noah Solomon** 
-#### ***Martin Gluskr***
+#### ~~Martin Gluskr~~
