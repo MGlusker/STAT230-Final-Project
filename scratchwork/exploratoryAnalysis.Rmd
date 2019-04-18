@@ -11,11 +11,17 @@ library(tidyverse)
 library(Stat2Data)
 library(mosaic)
 library(dplyr)
+library(RSentiment)
 ```
 
-## R Markdown
+## Add sentiment
 
 ```{r}
+glimpse(clean)
+
+asdf <- clean %>% 
+  mutate(FinalSentiment = calculate_sentiment(Body)$sentiment)
+
 lm(Sentiment ~ sdfadf, data = FinalData)
 ```
 
