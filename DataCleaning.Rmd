@@ -1,0 +1,61 @@
+---
+title: "Data Cleaning pt 2"
+output: 
+---
+
+```{r}
+library(tidyr)
+library(dplyr)
+library(stringr)
+
+clean <- separate(clean, Author, into=c("Junk", "Author"), sep= ":" ,extra = "merge") %>%
+    select(-Junk)
+  clean <- separate(clean, Author_Flair_CSS_Class, into=c("Junk", "Author_Flair_CSS_Class"), sep= ":" ,extra = "merge") %>%
+    select(-Junk)
+  clean <- separate(clean, Author_Flair_Text, into=c("Junk", "Author_Flair_Text"), sep= ":" ,extra = "merge") %>%
+    select(-Junk)
+  clean <- separate(clean, Body, into=c("Junk", "Body"), sep= ":" ,extra = "merge") %>%
+    select(-Junk)
+  clean <- separate(clean, Can_Gild, into=c("Junk", "Can_Gild"), sep= ":" ,extra = "merge") %>%
+    select(-Junk)
+  clean <- separate(clean, Controversiality, into=c("Junk", "Controversiality"), sep= ":" ,extra = "merge") %>%
+    select(-Junk)
+  clean <- separate(clean, Create_UTC, into=c("Junk", "Create_UTC"), sep= ":" ,extra = "merge") %>%
+    select(-Junk)
+  clean <- separate(clean, Distinguished, into=c("Junk", "Distinguished"), sep= ":" ,extra = "merge") %>%
+    select(-Junk)
+  clean <- separate(clean, Edited, into=c("Junk", "Edited"), sep= ":" ,extra = "merge") %>%
+    select(-Junk)
+  clean <- separate(clean, Gilded, into=c("Junk", "Gilded"), sep= ":" ,extra = "merge") %>%
+    select(-Junk)
+  clean <- separate(clean, ID, into=c("Junk", "ID"), sep= ":" ,extra = "merge") %>%
+    select(-Junk)
+  clean <- separate(clean, Is_Submitter, into=c("Junk", "Is_Submitter"), sep= ":" ,extra = "merge") %>%
+    select(-Junk)
+  clean <- separate(clean, Link_ID, into=c("Junk", "Link_ID"), sep= ":" ,extra = "merge") %>%
+    select(-Junk)
+  clean <- separate(clean, Parent_ID, into=c("Junk", "Parent_ID"), sep= ":" ,extra = "merge") %>%
+    select(-Junk)
+  clean <- separate(clean, Permalink, into=c("Junk", "Permalink"), sep= ":" ,extra = "merge") %>%
+    select(-Junk)
+  clean <- separate(clean, Retrieved_On, into=c("Junk", "Retrieved_On"), sep= ":" ,extra = "merge") %>%
+    select(-Junk)
+  clean <- separate(clean, Score, into=c("Junk", "Score"), sep= ":" ,extra = "merge") %>%
+    select(-Junk)
+  clean <- separate(clean, Stickied, into=c("Junk", "Stickied"), sep= ":" ,extra = "merge") %>%
+    select(-Junk)
+  clean <- separate(clean, Subreddit, into=c("Junk", "Subreddit"), sep= ":" ,extra = "merge") %>%
+    select(-Junk)
+  clean <- separate(clean, Subreddit_ID, into=c("Junk", "Subreddit_ID"), sep= ":" ,extra = "merge") %>%
+    select(-Junk)
+  clean <- separate(clean, Subreddit_Type, into=c("Junk", "Subreddit_Type"), sep= ":" ,extra = "merge") %>%
+    select(-Junk)
+clean <- clean[!duplicated(clean),]
+ 
+clean <- clean[!(clean$Body == "[deleted]"),] 
+clean <- clean[!(clean$Body == "[removed]"),]
+clean <- clean[!(is.na(clean$Body)),]
+clean <- clean[!(is.na(clean$Author)),]
+
+save(clean, file = "cleanedData.rda")
+```
