@@ -1,0 +1,22 @@
+---
+title: "exploratoryAnalysis"
+author: "Oliver"
+date: "4/17/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(Stat2Data)
+library(mosaic)
+library(dplyr)
+```
+
+## R Markdown
+
+```{r}
+lm(Sentiment ~ sdfadf, data = FinalData)
+```
+
+

@@ -44,6 +44,8 @@ documents <- data.frame("text" = c(
 
 sentiment <- analyzeSentiment(documents$text)
 
+convertToBinaryResponse(sentiment)$SentimentQDAP
+
 final_df <- full_join(documents, sentiment)
 
 ```
