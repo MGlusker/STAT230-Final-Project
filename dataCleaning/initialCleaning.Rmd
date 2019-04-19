@@ -15,7 +15,7 @@ library(RSentiment)
 
 ```{r}
 #Load in the data from Data.csv
-comments <- read.csv("Data.csv", header = TRUE)
+comments <- read.csv("dataCleaning/Data.csv", header = TRUE)
 ```
 
 ```{r}
@@ -110,9 +110,46 @@ comments <- subset(comments, select = -c(Author, Create_UTC, ID, Link_ID, Parent
 #Convert controversiality and score from char to numeric
 comments <- comments %>% 
   mutate(Controversiality = as.numeric(Controversiality),
-         Score = as.numeric(Score))
+         Score = as.numeric(Score),
+         id = row_number())
 ```
 
+## Functions to add sentiment analysis to data frame
 ```{r}
 
+create_subset <- function(df, subset_bottom, subset_top) {
+  
+  subset <- df %>% 
+    filter(id > subset_bottom & id <= subset_top)
+  
+  comments_temp <- analyzeSentiment(subset$Body) %>% 
+    mutate(id = row_number() + subset_bottom)
+
+  df_subset <- full_join(subset, comments_temp, by="id")
+  
+  return(df_subset)
+}
+
+create_full_df <- function(df) {
+  df1 <- create_subset(df, 0, 20000)
+  df2 <- create_subset(df, 20000, 40000)
+  df3 <- create_subset(df, 40000, 60000)
+  df4 <- create_subset(df, 60000, 80000)
+  df5 <- create_subset(df, 80000, 99500)
+  
+  final_df <- full_join(df1, df2)
+  final_df <- full_join(final_df, df3)
+  final_df <- full_join(final_df, df4)
+  final_df <- full_join(final_df, df5)
+  
+  return(final_df)
+}
+
+# this takes a long time
+final_df <- create_full_df(comments)
+```
+
+## Now write final dataframe to a csv
+```{r}
+write.csv(final_df, file = "finalData.csv")
 ```

@@ -15,15 +15,15 @@ library(dplyr)
 ## RSentiment Package
 
 ```{r}
-test <- calculate_sentiment(c("hello how are you you fucker", "you look so good today", "I love you", "I hate hate hate hate hate you")) 
+test <- calculate_sentiment(c("hello how are you you fucker", "you look so good today", "I love you", "I hate hate hate hate hate you", "hello how are you you fucker", "Aw yeah incest is illegal. Jerking off in the same room with a guy who happens to be your cousin is not illegal. Weird, maybe. But illegal, no. Get your facts right idiot")) 
 
-test <- test %>% 
+titest <- test %>% 
   select(text)
 
 final_data <- test %>% 
   mutate(FinalSentiment = calculate_sentiment(text)$sentiment)
 
-
+View(final_data)
 ```
 
 ## SentimentAnalsyis package
@@ -40,13 +40,15 @@ documents <- data.frame("text" = c(
                "This is neither positive or negative.",
                "The waiter forget about my dessert -- what poor service!"),
                "id" = c(1,2,3,4,5,6)) %>% 
-  mutate(text = as.character(text))
+  mutate(text = as.character(text),
+         sentiment = convertToBinaryResponse(analyzeSentiment(text)$SentimentQDAP))
 
-sentiment <- analyzeSentiment(documents$text)
+sentiment <- analyzeSentiment(documents$text) %>% 
+  mutate(id = row_number())
 
 convertToBinaryResponse(sentiment)$SentimentQDAP
 
-final_df <- full_join(documents, sentiment)
+final_df <- full_join(documents, sentiment, by="id")
 
 ```
 
