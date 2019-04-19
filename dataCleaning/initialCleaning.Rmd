@@ -1,30 +1,88 @@
 ---
 title: "initialCleaning"
-author: "Oliver"
+author: "Oliver & Noah"
 date: "4/18/2019"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+
+```{r}
+library(tidyr)
+library(dplyr)
+library(stringr)
+
+#Load in the data from Data.csv
+comments <- read.csv("Data.csv", header = TRUE)
+
+
+#Fix formating each of these blocks reformats a specific row, drops all unnecsary information, and removes rows with problematic formatting if necessary.
+
+#Author
+comments <- separate(comments, Author, into=c("Junk", "Author"), sep= ":" ,extra = "merge") %>%
+  select(-Junk)
+comments <- comments[!is.na((comments$Author)),] #Removes another set of slightly malformated rows.
+#Author_Flair_CSS_Class
+comments <- separate(comments, Author_Flair_CSS_Class, into=c("Junk", "Author_Flair_CSS_Class"), sep= ":" ,extra = "merge") %>%
+    select(-Junk)
+comments <- comments[!is.na((comments$Author_Flair_CSS_Class)),]
+#Author_Flair_Text
+comments <- separate(comments, Author_Flair_Text, into=c("Junk", "Author_Flair_Text"), sep= ":" ,extra = "merge") %>%
+    select(-Junk)
+#Body
+comments <- separate(comments, Body, into=c("Junk", "Body"), sep= ":" ,extra = "merge") %>%
+    select(-Junk)
+#Can_Gild
+comments <- separate(comments, Can_Gild, into=c("Junk", "Can_Gild"), sep= ":" ,extra = "merge") %>%
+    select(-Junk)
+#Controversiality
+comments <- separate(comments, Controversiality, into=c("Junk", "Controversiality"), sep= ":" ,extra = "merge") %>%
+    select(-Junk)
+#Distinguished
+comments <- separate(comments, Distinguished, into=c("Junk", "Distinguished"), sep= ":" ,extra = "merge") %>%
+    select(-Junk)
+#Edited
+comments <- separate(comments, Edited, into=c("Junk", "Edited"), sep= ":" ,extra = "merge") %>%
+    select(-Junk)
+#Gilded
+comments <- separate(comments, Gilded, into=c("Junk", "Gilded"), sep= ":" ,extra = "merge") %>%
+    select(-Junk)
+#ID
+comments <- separate(comments, ID, into=c("Junk", "ID"), sep= ":" ,extra = "merge") %>%
+    select(-Junk)
+#Is_Submitter
+comments <- separate(comments, Is_Submitter, into=c("Junk", "Is_Submitter"), sep= ":" ,extra = "merge") %>%
+    select(-Junk)
+#Link_ID
+comments <- separate(comments, Link_ID, into=c("Junk", "Link_ID"), sep= ":" ,extra = "merge") %>%
+    select(-Junk)
+#Parent_ID
+comments <- separate(comments, Parent_ID, into=c("Junk", "Parent_ID"), sep= ":" ,extra = "merge") %>%
+    select(-Junk)
+#Permalink
+comments <- separate(comments, Permalink, into=c("Junk", "Permalink"), sep= ":" ,extra = "merge") %>%
+    select(-Junk)
+#Score
+comments <- separate(comments, Score, into=c("Junk", "Score"), sep= ":" ,extra = "merge") %>%
+    select(-Junk)
+#Stickied
+comments <- separate(comments, Stickied, into=c("Junk", "Stickied"), sep= ":" ,extra = "merge") %>%
+    select(-Junk)
+#Subreddit
+comments <- separate(comments, Subreddit, into=c("Junk", "Subreddit"), sep= ":" ,extra = "merge") %>%
+    select(-Junk)
+#Subreddit_ID
+comments <- separate(comments, Subreddit_ID, into=c("Junk", "Subreddit_ID"), sep= ":" ,extra = "merge") %>%
+    select(-Junk)
+#Subreddit_Type
+comments <- separate(comments, Subreddit_Type, into=c("Junk", "Subreddit_Type"), sep= ":" ,extra = "merge") %>%
+    select(-Junk)
+
+
+#Remove duplicate rows
+comments <- comments[!duplicated(comments),]
+
+#Drop superfluous columns
+comments <- subset(comments, select = -c(Author, Create_UTC, ID, Link_ID, Parent_ID, Permalink, Subreddit_ID))
+
 ```
 
-## R Markdown
-
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
-```
-
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
