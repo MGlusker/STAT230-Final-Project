@@ -15,7 +15,9 @@ library(dplyr)
 ## RSentiment Package
 
 ```{r}
-test <- calculate_sentiment(c("hello how are you you fucker", "you look so good today", "I love you", "I hate hate hate hate hate you", "hello how are you you fucker", "Aw yeah incest is illegal. Jerking off in the same room with a guy who happens to be your cousin is not illegal. Weird, maybe. But illegal, no. Get your facts right idiot")) 
+test <- calculate_sentiment(c("hello how are you you fucker", "you look so good today", "I love you", "I hate hate hate hate hate you", "hello how are you you fucker"))
+                            
+# "Aw yeah incest is illegal. Jerking off in the same room with a guy who happens to be your cousin is not illegal. Weird, maybe. But illegal, no. Get your facts right idiot")) 
 
 titest <- test %>% 
   select(text)
