@@ -1,0 +1,38 @@
+---
+title: "Project Summary"
+author: "Noah Solomon, Oliver Baldwin Edwards, Martin Glusker"
+output:
+  pdf_document: default
+  html_notebook: default
+---
+
+#"The project document should be submitted to the shared project folder as an R markdown (.Rmd) file and the corresponding rendered (.pdf) output file."  So you don't have to use the template, but you do need to submit a .Rmd file.  The idea is that I will be able to run the R markdown files and get same results (reproducible research) -- the other problem right now is that I cannot open the "FinalData" dataset stored in your Dropbox folder -- it gives an error.  Have you been able to load and work with that one in R?
+
+#before jumping to statements about your goal, give background in this area ... 
+
+#Background and Significance
+Our primary goal is to see what sort of comments garner attention in online forums, specifically reddit , our case. We’re interested in examining the relationship between the sentiment of a comment, and the comment’s relevant data points: primarily overall score of the comment (an indicator of the comment’s popularity), and the controversiality of a comment. We want to examine whether there is an overall relationship between the positive or negative sentiment of a comment and it’s score and controversiality. We also want to look at the whether the overall average sentiment of a subreddit (a sub-community within reddit) effects whether positive or negative comments on that subreddit garner attention. For example, the subreddit r/aww, a subreddit dedicated to sharing photos of cute animals, and also a subreddit we would expect to have a positive average sentiment, we would look to see whether positive comments on that subreddit get more attention than other comments. We could also apply this methodology to toxic subreddits on Reddit, looking to see whether negative comments get more attention than others in those communities.
+
+We want to see whether the sentiment of a comment can predict variables such as score and controversiality accurately, and whether there exists any relationship at all.
+#you've explained *what* you're planning to look at and your goal, but also try to add *why* the questions you're addressing are important and worthy of exploring
+#ah-ha -- so a possible interaction between the initial subreddit sentiment and the sentiment of comments on the comments popularity!
+
+#Methods
+##Data collection
+These data were collected via a census of comments posted on reddit.com on 01/01/18, yielding 1.2 million comments. For usability, 100,000 of the original 1.2 Million comments were then selected at random and the rest were discarded. The data set was then cleaned by removing duplicate rows and those with formatting errors.
+
+
+##Variable creation
+Response variable examined was score (equal to upvotes-downvotes), predicted using Stefan Feuerriegel & Nicolas Proellochs’ Sentiment Analysis package using the QDAP dictionary compiled by Tyler Rinker. In particular, sentiment analysis was run on the body of the comment, and SentimentQDAP, NegativityQDAP, and PositivtyQDAP were used as predictor variables. In addition the binary variable Moderator was examined as a potential predictor.
+#I don't see why the QDAP was needed to derive the score if score is just = upvotes - downvotes (which I presume are two quantitative variables collected in the dataset?)  Perhaps meant to move this to the next sentence (regarding the sentiment of the body of the comment)?
+#what does Moderator represent?
+#should define these  (Sentiment QDAP, PositivityQDAP etc) -- assume reader has no knowledge of sentiment analysis (same for presentation -- most won't be familiar)
+#what about popularity? In background you mention both overall score of the comment (popularity) and the controversiality of a comment
+
+##Analytic methods
+Multiple linear regression was used to study the association between score and sentiment us R sentiment. This was found to produce insufficiently detailed sentiment analysis, so the R Sentiment package was discarded for the Sentiment Analysis package detailed above. Using this package, a second Multiple linear regression was used to study the association between score and SentimentQDAP, NegativityQDAP, PositivityQDAP, and Moderator. We will conduct an overall F-test on the model as well as some nested F-tests to examine which sets of variables produce an effective model. Other things we will consider include using single factor anova tests on the categorical factor “Sentiment” with three levels (positive, negative, and neutral) to determine whether the true mean score of comments is different across these three groups.
+
+#one other thought here is to be sure to consider practical importance of any significant predictors -- with this large a sample size, you are very likely to be able to detect even the smallest of differences. 
+#okay, sounds like a good plan.  also want to include at least one randomization-based technique learned in class.  could compare parametric one-way ANOVA p-value to randomization test p-value
+
+
