@@ -1,0 +1,15 @@
+---
+title: "ModelBuilding"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+library(mosaic)
+library(SentimentAnalysis)
+
+
+fullData <- read.csv('finalData.csv')
+m1 <- glm(as.factor(Controversiality) ~ WordCount, data = fullData)
+msummary(m1)
+```
+
