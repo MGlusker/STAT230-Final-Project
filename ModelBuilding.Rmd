@@ -4,12 +4,47 @@ output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
+#Load required packages
 library(mosaic)
 library(SentimentAnalysis)
+library(dplyr)
+library(DescTools)
+library(lmtest)
+```
 
-
+```{r}
+#Read in the data from the csv, then convert Controversiality into a factor.
 fullData <- read.csv('finalData.csv')
-m1 <- glm(as.factor(Controversiality) ~ WordCount, data = fullData)
+fullData$Controversiality = as.factor(fullData$Controversiality)
+```
+##Logistic Models Predicting Controversiality
+```{r}
+#Build a 'kitchenSink' logistic model with a ton of predictors
+kitchenSink <- glm(Controversiality ~ WordCount + SentimentQDAP + SentimentLM + SentimentHE + SentimentGI + Gilded, data = fullData, family = "binomial")
+msummary(kitchenSink)
+
+#Build a minimnal logistic
+minimal <- glm(Controversiality ~ SentimentQDAP + SentimentLM, data = fullData, family = "binomial")
+msummary(minimal)
+
+lrtest(kitchenSink)
+lrtest(minimal)
+lrtest(minimal, kitchenSink)
+
+```
+##Multiple Linear Regression Models Predicting Score from Subset of Controversial Comments
+```{r}
+#Filter out uncontroversial Comments
+controversial <- filter(fullData, Controversiality == 1)
+
+#Kitchen sink model
+m1 <- lm(Score ~ SentimentQDAP + SentimentLM + WordCount + Is_Submitter + Gilded, data = controversial)
 msummary(m1)
+
+#Minimal Model
+m2 <- lm(Score ~ SentimentQDAP + SentimentLM, data = controversial)
+msummary(m2)
+
+#These are all kind of garbage models, maybe this is not a fruitful analysis on this data set.
 ```
 
