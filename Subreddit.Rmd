@@ -1,0 +1,35 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+
+```{r}
+library(dplyr)
+finaldata <- read.csv("finalData.csv")
+
+finaldata1 <- finaldata %>%  
+  filter(Controversiality == 1 | Score>5 | Score< (-5) | WordCount>10) %>% 
+  filter(complete.cases(finaldata))
+
+finaldata1 <- finaldata %>% 
+  filter(complete.cases(finaldata))
+
+subreddit <- finaldata1 %>% 
+  group_by(Subreddit) %>% 
+  summarize(scaled_mean_GI= mean(SentimentGI), scaled_mean_QDAP = mean(SentimentQDAP), scaled_mean_HE = mean(SentimentHE), scaled_mean_LM =mean(SentimentLM), Count = n()) %>%
+  filter(Count > 50)
+
+subreddit[, c(2,3,4,5)] <- scale(subreddit[, c(2,3,4,5)])
+
+subreddit <- subreddit %>% 
+  mutate(total_mean = (scaled_mean_GI + scaled_mean_QDAP + scaled_mean_HE + scaled_mean_LM)/4)
+
+
+
+
+
+  
+```
+
