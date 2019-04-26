@@ -12,17 +12,45 @@ library(Stat2Data)
 library(mosaic)
 library(dplyr)
 library(RSentiment)
+library(SentimentAnalysis)
 ```
 
 ## Add sentiment
 
 ```{r}
-glimpse(clean)
-
-asdf <- clean %>% 
-  mutate(FinalSentiment = calculate_sentiment(Body)$sentiment)
-
-lm(Sentiment ~ sdfadf, data = FinalData)
+final_df <- read_csv("finalData.csv")
+View(final_df)
 ```
 
+```{r}
+model1 <- lm(Score ~ SentimentQDAP + SentimentLM + SentimentGI + SentimentHE + Controversiality, data = final_df)
+msummary(model1)
+```
 
+```{r}
+
+longWordCount <- final_df %>% 
+  filter(Score < -2 | Score > 2) %>% 
+  mutate(final_sentiment = (SentimentQDAP + SentimentLM + SentimentGI + SentimentHE) / 4)
+
+#model1 <- lm(Score ~ SentimentQDAP + SentimentLM + SentimentGI + SentimentHE + Controversiality, data = longWordCount)
+#msummary(model1)
+
+glimpse(longWordCount)
+
+model1 <- lm(Score ~ final_sentiment + Controversiality, data = longWordCount)
+msummary(model1)
+
+```
+
+```{r}
+
+newData <- final_df %>% 
+  mutate(sent_final <- calculate_sentiment(Body)$sentiment)
+
+
+newData <- final_df %>% 
+  filter(X1 == 23) %>% 
+  mutate(sent_final <- calculate_sentiment(Body)$sentiment) %>% 
+  select(Body, sent_final)
+``` 
