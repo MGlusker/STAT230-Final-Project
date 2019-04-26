@@ -29,7 +29,12 @@ msummary(minimal)
 
 lrtest(kitchenSink)
 lrtest(minimal)
-lrtest(minimal, kitchenSink)
+lrtest(kitchenSink, minimal)
+
+#Does SentimentLM add meaningful Info
+min <- glm(Controversiality ~ SentimentQDAP, data = fullData, family = "binomial")
+lrtest(min, minimal)
+#Kind of.
 
 ```
 ##Multiple Linear Regression Models Predicting Score from Subset of Controversial Comments
