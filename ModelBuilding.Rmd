@@ -19,7 +19,7 @@ fullData$Controversiality = as.factor(fullData$Controversiality)
 ```
 ##Logistic Models Predicting Controversiality
 ```{r}
-#Build a 'kitchenSink' logistic model with a ton of predictors
+#Build a 'kitchenSink' logistic model with a ton of predictors 
 kitchenSink <- glm(Controversiality ~ WordCount + SentimentQDAP + SentimentLM + SentimentHE + SentimentGI + Gilded, data = fullData, family = "binomial")
 msummary(kitchenSink)
 
