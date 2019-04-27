@@ -16,7 +16,7 @@ library(SentimentAnalysis)
 
 ```{r}
 #Load in the data from Data.csv
-comments <- read.csv("Data03.csv", header = TRUE)
+comments <- read.csv("Data04.csv", header = TRUE)
 
 ```
 
@@ -159,5 +159,5 @@ final_df <- create_full_df(comments)
 
 ## Now write final dataframe to a csv
 ```{r}
-write.csv(final_df, file = "finalData03.csv")
+write.csv(final_df, file = "finalData04.csv")
 ```
