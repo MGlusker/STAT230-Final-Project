@@ -1,0 +1,137 @@
+---
+title: "bootstrapping"
+author: "Oliver"
+date: "4/26/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+#Load required packages
+library(mosaic)
+library(SentimentAnalysis)
+library(dplyr)
+library(DescTools)
+library(lmtest)
+library(tidyverse)
+```
+
+# use Martin's subreddit code to get dataset grouped by subreddit with mean score
+```{r}
+finaldata <- read.csv("finalData.csv")
+
+finaldata1 <- finaldata %>%  
+  filter(Controversiality == 1 | Score>5 | Score< (-5) | WordCount>10) %>% 
+  filter(complete.cases(finaldata))
+
+finaldata1 <- finaldata %>% 
+  filter(complete.cases(finaldata))
+
+subreddit <- finaldata1 %>% 
+  group_by(Subreddit) %>% 
+  summarize(scaled_mean_GI= mean(SentimentGI), scaled_mean_QDAP = mean(SentimentQDAP), scaled_mean_HE = mean(SentimentHE), scaled_mean_LM =mean(SentimentLM), Count = n()) %>%
+  filter(Count > 50)  
+
+subreddit[, c(3,4,5,6)] <- scale(subreddit[, c(3,4,5,6)])
+
+finalData <- subreddit %>% 
+  mutate(total_mean = (scaled_mean_GI + scaled_mean_QDAP + scaled_mean_HE + scaled_mean_LM)/4)
+
+finalData$Controversiality = as.factor(finalData$Controversiality)
+
+glimpse(finalData)
+```
+
+# get original CI from model
+```{r}
+set.seed(2)
+model1 <- glm(Controversiality ~ total_mean, data = finalData, family = "binomial")
+msummary(model1)
+confint(model1, level=0.98)
+```
+
+
+# full data set not grouped by subreddit
+```{r}
+fullData <- read.csv('finalData.csv')
+fullData$Controversiality = as.factor(fullData$Controversiality)
+```
+
+# final model
+```{r}
+final_model <- glm(Controversiality ~ SentimentQDAP + SentimentLM, data = fullData, family = "binomial")
+msummary(final_model)
+confint(final_model, level=0.95)
+```
+
+# now bootstrap
+```{r}
+bootstrap <- do(100)*glm(Controversiality ~ SentimentQDAP + SentimentLM, data = fullData, family = "binomial")$coefficients
+
+names(bootstrap)
+```
+
+```{r}
+##QDAP
+favstats(~SentimentQDAP, data=bootstrap)
+# visualize the bootstrap dist'n for admitp
+gf_density(~SentimentQDAP, data=bootstrap
+           , xlab="slope coefficient for QDAP"
+           , title="Bootstrap Distribution of Slope Coefficient for total_mean") %>%
+  gf_vline(xintercept = ~ coef(final_model)["SentimentQDAP"], color="red") %>%
+  gf_vline(xintercept = ~ 0 , color="blue")
+
+##LM
+favstats(~SentimentLM, data=bootstrap)
+# visualize the bootstrap dist'n for admitp
+gf_density(~SentimentLM, data=bootstrap
+           , xlab="slope coefficient for LM"
+           , title="Bootstrap Distribution of Slope Coefficient for total_mean") %>%
+  gf_vline(xintercept = ~ coef(final_model)["SentimentLM"], color="red") %>%
+  gf_vline(xintercept = ~ 0 , color="blue")
+```
+
+
+
+#randomization test QDAP
+```{r}
+final_model <- glm(Controversiality ~ SentimentQDAP + SentimentLM, data = fullData, family = "binomial")
+
+# original (observed) slope for comparison
+observed_slope_QDAP <- coef(final_model)["SentimentQDAP"]
+
+# for reproducibility, use set.seed()
+set.seed(2)
+
+# change the number within set.seed if you want different randomly shuffled values
+slopetest <- do(100) * (glm(Controversiality ~ shuffle(SentimentQDAP) + SentimentLM, data = fullData, family = "binomial"))
+
+## Create Plots
+
+# create a density plot to compare the distribution of slopes get from 
+gf_density(~SentimentQDAP, data=slopetest, xlab="Slope Coefficients for Shuffled QDAP") %>%
+  gf_vline(xintercept = ~ observed_slope_QDAP, color="red")
+
+favstats(~SentimentQDAP, data=slopetest)
+quantile(~SentimentQDAP, data=slopetest, p=c(0.01,0.025,0.05))
+```
+
+#randomization test LM 
+```{r}
+# original (observed) slope for comparison
+observed_slope_LM <- coef(final_model)["SentimentLM"]
+
+# for reproducibility, use set.seed()
+set.seed(2)
+
+# change the number within set.seed if you want different randomly shuffled values
+slopetest <- do(100) * (glm(Controversiality ~ SentimentQDAP + shuffle(SentimentLM), data = fullData, family = "binomial"))
+
+## Create Plots
+
+# create a density plot to compare the distribution of slopes get from 
+gf_density(~SentimentLM, data=slopetest, xlab="Slope Coefficients for Shuffled QDAP") %>%
+  gf_vline(xintercept = ~ observed_slope_LM, color="red")
+
+favstats(~SentimentLM, data=slopetest)
+quantile(~SentimentLM, data=slopetest, p=c(0.01,0.025,0.05))
+```
