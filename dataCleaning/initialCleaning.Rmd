@@ -11,11 +11,12 @@ library(tidyr)
 library(dplyr)
 library(stringr)
 library(RSentiment)
+library(SentimentAnalysis)
 ```
 
 ```{r}
 #Load in the data from Data.csv
-comments <- read.csv("Data02.csv", header = TRUE)
+comments <- read.csv("Data03.csv", header = TRUE)
 ```
 
 ```{r}
@@ -102,7 +103,7 @@ uncleaned <- comments
   out <- separate(out, Subreddit_Type, into=c("Junk", "Subreddit_Type"), sep= ":" ,extra = "merge")
       select(out,-Junk)
 
-
+comments <- out
 
 ```
 
@@ -157,5 +158,5 @@ final_df <- create_full_df(comments)
 
 ## Now write final dataframe to a csv
 ```{r}
-write.csv(final_df, file = "finalData.csv")
+write.csv(final_df, file = "finalData03.csv")
 ```
