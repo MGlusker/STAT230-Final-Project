@@ -1,6 +1,8 @@
 ---
-title: "R Notebook"
-output: html_notebook
+title: "Subreddit"
+author: "Martin"
+date: "4/27/2019"
+output: html_document
 ---
 
 
@@ -8,26 +10,34 @@ output: html_notebook
 ```{r}
 library(dplyr)
 
+finaldata <- read.csv("finalData.csv")
 finaldata1 <- finaldata %>%  
-  filter(complete.cases(finaldata)) %>% 
-   filter(Controversiality == 1 | Score>3 | Score< (-3) | WordCount>5) 
-
+  filter(complete.cases(finaldata))  
 
 subreddit <- finaldata1 %>% 
   group_by(Subreddit) %>% 
-  summarize(mean_GI= mean(SentimentGI), mean_QDAP = mean(SentimentQDAP), mean_HE = mean(SentimentHE), mean_LM =mean(SentimentLM), uncertainty = mean(RatioUncertaintyLM), Count = n()) %>% filter(Count > 30)
+  summarize(mean_subreddit_GI= mean(SentimentGI), mean_subreddit_QDAP = mean(SentimentQDAP), mean_subreddit_HE = mean(SentimentHE), mean_subreddit_LM =mean(SentimentLM), comments_in_subreddit = n()) 
 
-subreddit[, c(8,9,10,11)] <- scale(subreddit[, c(2,3,4,5)])
+subreddit[, c(7,8,9,10)] <- scale(subreddit[, c(2,3,4,5)])
+
+subreddit1<- subreddit %>% 
+  mutate(subreddit_scaled_total_mean = (V8 + V9 + V10 + V7)/4) %>% 
+  select(Subreddit, subreddit_scaled_total_mean)
+
+subreddit2 <- select(subreddit, -V8,-V9,-V10, -V7)
+
+subreddit_final <- full_join(subreddit1, subreddit2, by = "Subreddit")
 
 
-mean_sentiments <- subreddit %>% 
-  mutate(standardized_total_mean = (V8 + V9 + V10 + V11)/4) %>% 
-  select(Subreddit, Count, standardized_total_mean)
+joined_final <- full_join(finaldata, subreddit_final, by = "Subreddit" )
 
+#The diff vars are of form comment sentiment minus subreddit average sentiment
+joined_final1 <- joined_final %>%  
+  mutate(subreddit_diff_GI = SentimentGI - mean_subreddit_GI ,subreddit_diff_QDAP = SentimentQDAP - mean_subreddit_QDAP, subreddit_diff_HE = SentimentHE - mean_subreddit_HE, subreddit_diff_LM = SentimentLM - mean_subreddit_LM)
 
-
-
-
+joined_final2 <- joined_final1 %>% 
+  mutate(scaled_GI = scale(SentimentGI), scaled_QDAP = scale(SentimentQDAP), scaled_HE = scale(SentimentHE), scaled_LM = scale(SentimentLM)) %>% 
+  mutate( mean_scaled_comment_sentiment = (scaled_GI + scaled_QDAP + scaled_HE + scaled_LM)/4 ) %>% mutate(total_scaled_sentiment_diff = mean_scaled_comment_sentiment - subreddit_scaled_total_mean) 
   
- ```
 
+```
