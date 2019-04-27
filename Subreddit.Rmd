@@ -7,7 +7,6 @@ output: html_notebook
 
 ```{r}
 library(dplyr)
-finaldata <- read.csv("finalData.csv")
 
 finaldata1 <- finaldata %>%  
   filter(complete.cases(finaldata)) %>% 
@@ -16,18 +15,19 @@ finaldata1 <- finaldata %>%
 
 subreddit <- finaldata1 %>% 
   group_by(Subreddit) %>% 
-  summarize(scaled_mean_GI= mean(SentimentGI), scaled_mean_QDAP = mean(SentimentQDAP), scaled_mean_HE = mean(SentimentHE), scaled_mean_LM =mean(SentimentLM), uncertainty = mean(RatioUncertaintyLM), Count = n()) %>%
-  filter(Count > 10)
+  summarize(mean_GI= mean(SentimentGI), mean_QDAP = mean(SentimentQDAP), mean_HE = mean(SentimentHE), mean_LM =mean(SentimentLM), uncertainty = mean(RatioUncertaintyLM), Count = n()) %>% filter(Count > 30)
 
-subreddit[, c(2,3,4,5)] <- scale(subreddit[, c(2,3,4,5)])
+subreddit[, c(8,9,10,11)] <- scale(subreddit[, c(2,3,4,5)])
 
-subreddit <- subreddit %>% 
-  mutate(total_mean = (scaled_mean_GI + scaled_mean_QDAP + scaled_mean_HE + scaled_mean_LM)/4)
+
+mean_sentiments <- subreddit %>% 
+  mutate(standardized_total_mean = (V8 + V9 + V10 + V11)/4) %>% 
+  select(Subreddit, Count, standardized_total_mean)
 
 
 
 
 
   
-```
+ ```
 

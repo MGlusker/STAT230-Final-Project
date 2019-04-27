@@ -15,7 +15,7 @@ library(RSentiment)
 
 ```{r}
 #Load in the data from Data.csv
-comments <- read.csv("dataCleaning/Data.csv", header = TRUE)
+comments <- read.csv("../dataCleaning/Data.csv", header = TRUE)
 ```
 
 ```{r}
