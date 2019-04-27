@@ -15,89 +15,99 @@ library(RSentiment)
 
 ```{r}
 #Load in the data from Data.csv
+<<<<<<< HEAD
 comments <- read.csv("../dataCleaning/Data.csv", header = TRUE)
+=======
+comments <- read.csv("Data02.csv", header = TRUE)
+>>>>>>> 0e6a5ae57887ed79836cbc8b8202c110224e1ef4
 ```
 
 ```{r}
 #Fix formating each of these blocks reformats a specific row, drops all unnecsary information, and removes rows with problematic formatting if necessary.
 
-#Author
-comments <- separate(comments, Author, into=c("Junk", "Author"), sep= ":" ,extra = "merge") %>%
-  select(-Junk)
-comments <- comments[!is.na((comments$Author)),] #Removes another set of slightly malformated rows.
+uncleaned <- comments
 
-#Author_Flair_CSS_Class
-comments <- separate(comments, Author_Flair_CSS_Class, into=c("Junk", "Author_Flair_CSS_Class"), sep= ":" ,extra = "merge") %>%
-    select(-Junk)
-comments <- comments[!is.na((comments$Author_Flair_CSS_Class)),]
+  #Author
+  out <- separate(uncleaned, Author, into=c("Junk", "Author"), sep= ":" ,extra = "merge")
+    out <- select(out, -Junk)
+  out <- out[!is.na((out$Author)),]#Removes another set of slightly malformated rows.
+  
+  #Author_Flair_CSS_Class
+  out <- separate(out, Author_Flair_CSS_Class, into=c("Junk", "Author_Flair_CSS_Class"), sep= ":" ,extra = "merge")
+      
+    out <- (select(out, -Junk))
+  out <- out[!is.na((out$Author_Flair_CSS_Class)),]
+  
+  #Author_Flair_Text
+  out <- separate(out, Author_Flair_Text, into=c("Junk", "Author_Flair_Text"), sep= ":" ,extra = "merge") 
+      out <- select(out, -Junk)
+  
+  #Body
+  out <- separate(out, Body, into=c("Junk", "Body"), sep= ":" ,extra = "merge")
+      out <- select(out, -Junk)
+  
+  #Can_Gild
+  out <- separate(out, Can_Gild, into=c("Junk", "Can_Gild"), sep= ":" ,extra = "merge")
+      out <- select(out, -Junk)
+  
+  #Controversiality
+  out <- separate(out, Controversiality, into=c("Junk", "Controversiality"), sep= ":" ,extra = "merge")
+      out <- select(out, -Junk)
+  
+  #Distinguished
+  out <- separate(out, Distinguished, into=c("Junk", "Distinguished"), sep= ":" ,extra = "merge")
+      out <- select(out, -Junk)
+  
+  #Edited
+  out <- separate(out, Edited, into=c("Junk", "Edited"), sep= ":" ,extra = "merge")
+      out <- select(out, -Junk)
+  
+  #Gilded
+  out <- separate(out, Gilded, into=c("Junk", "Gilded"), sep= ":" ,extra = "merge")
+      out <- select(out, -Junk)
+  
+  #ID
+  out <- separate(out, ID, into=c("Junk", "ID"), sep= ":" ,extra = "merge")
+      out <- select(out, -Junk)
+  
+  #Is_Submitter
+  out <- separate(out, Is_Submitter, into=c("Junk", "Is_Submitter"), sep= ":" ,extra = "merge")
+      out <- select(out, -Junk)
+  
+  #Link_ID
+  out <- separate(out, Link_ID, into=c("Junk", "Link_ID"), sep= ":" ,extra = "merge")
+      out <- select(out, -Junk)
+  
+  #Parent_ID
+  out <- separate(out, Parent_ID, into=c("Junk", "Parent_ID"), sep= ":" ,extra = "merge")
+      out <- select(out, -Junk)
+  
+  #Permalink
+  out <- separate(out, Permalink, into=c("Junk", "Permalink"), sep= ":" ,extra = "merge")
+      out <- select(out, -Junk)
+  
+  #Score
+  out <- separate(out, Score, into=c("Junk", "Score"), sep= ":" ,extra = "merge")
+      select(out, -Junk)
+  
+  #Stickied
+  out <- separate(out, Stickied, into=c("Junk", "Stickied"), sep= ":" ,extra = "merge")
+      select(out,-Junk)
+  
+  #Subreddit
+  out <- separate(out, Subreddit, into=c("Junk", "Subreddit"), sep= ":" ,extra = "merge")
+      select(out,-Junk)
+  
+  #Subreddit_ID
+  out <- separate(out, Subreddit_ID, into=c("Junk", "Subreddit_ID"), sep= ":" ,extra = "merge")
+      select(out,-Junk)
+  
+  #Subreddit_Type
+  out <- separate(out, Subreddit_Type, into=c("Junk", "Subreddit_Type"), sep= ":" ,extra = "merge")
+      select(out,-Junk)
 
-#Author_Flair_Text
-comments <- separate(comments, Author_Flair_Text, into=c("Junk", "Author_Flair_Text"), sep= ":" ,extra = "merge") %>%
-    select(-Junk)
 
-#Body
-comments <- separate(comments, Body, into=c("Junk", "Body"), sep= ":" ,extra = "merge") %>%
-    select(-Junk)
 
-#Can_Gild
-comments <- separate(comments, Can_Gild, into=c("Junk", "Can_Gild"), sep= ":" ,extra = "merge") %>%
-    select(-Junk)
-
-#Controversiality
-comments <- separate(comments, Controversiality, into=c("Junk", "Controversiality"), sep= ":" ,extra = "merge") %>%
-    select(-Junk)
-
-#Distinguished
-comments <- separate(comments, Distinguished, into=c("Junk", "Distinguished"), sep= ":" ,extra = "merge") %>%
-    select(-Junk)
-
-#Edited
-comments <- separate(comments, Edited, into=c("Junk", "Edited"), sep= ":" ,extra = "merge") %>%
-    select(-Junk)
-
-#Gilded
-comments <- separate(comments, Gilded, into=c("Junk", "Gilded"), sep= ":" ,extra = "merge") %>%
-    select(-Junk)
-
-#ID
-comments <- separate(comments, ID, into=c("Junk", "ID"), sep= ":" ,extra = "merge") %>%
-    select(-Junk)
-
-#Is_Submitter
-comments <- separate(comments, Is_Submitter, into=c("Junk", "Is_Submitter"), sep= ":" ,extra = "merge") %>%
-    select(-Junk)
-
-#Link_ID
-comments <- separate(comments, Link_ID, into=c("Junk", "Link_ID"), sep= ":" ,extra = "merge") %>%
-    select(-Junk)
-
-#Parent_ID
-comments <- separate(comments, Parent_ID, into=c("Junk", "Parent_ID"), sep= ":" ,extra = "merge") %>%
-    select(-Junk)
-
-#Permalink
-comments <- separate(comments, Permalink, into=c("Junk", "Permalink"), sep= ":" ,extra = "merge") %>%
-    select(-Junk)
-
-#Score
-comments <- separate(comments, Score, into=c("Junk", "Score"), sep= ":" ,extra = "merge") %>%
-    select(-Junk)
-
-#Stickied
-comments <- separate(comments, Stickied, into=c("Junk", "Stickied"), sep= ":" ,extra = "merge") %>%
-    select(-Junk)
-
-#Subreddit
-comments <- separate(comments, Subreddit, into=c("Junk", "Subreddit"), sep= ":" ,extra = "merge") %>%
-    select(-Junk)
-
-#Subreddit_ID
-comments <- separate(comments, Subreddit_ID, into=c("Junk", "Subreddit_ID"), sep= ":" ,extra = "merge") %>%
-    select(-Junk)
-
-#Subreddit_Type
-comments <- separate(comments, Subreddit_Type, into=c("Junk", "Subreddit_Type"), sep= ":" ,extra = "merge") %>%
-    select(-Junk)
 ```
 
 ```{r}
