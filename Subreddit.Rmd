@@ -10,13 +10,13 @@ output: html_document
 ```{r}
 library(dplyr)
 
-finaldata <- read.csv("finalData.csv")
+finaldata <- read.csv("fullComments.csv")
 finaldata1 <- finaldata %>%  
   filter(complete.cases(finaldata))  
 
 subreddit <- finaldata1 %>% 
   group_by(Subreddit) %>% 
-  summarize(mean_subreddit_GI= mean(SentimentGI), mean_subreddit_QDAP = mean(SentimentQDAP), mean_subreddit_HE = mean(SentimentHE), mean_subreddit_LM =mean(SentimentLM), comments_in_subreddit = n()) 
+  summarize(mean_subreddit_GI= mean(SentimentGI), mean_subreddit_QDAP = mean(SentimentQDAP), mean_subreddit_HE = mean(SentimentHE), mean_subreddit_LM =mean(SentimentLM), comments_in_subreddit = n()) #%>% filter(comments_in_subreddit >500)
 
 subreddit[, c(7,8,9,10)] <- scale(subreddit[, c(2,3,4,5)])
 
@@ -37,7 +37,11 @@ joined_final1 <- joined_final %>%
 
 joined_final2 <- joined_final1 %>% 
   mutate(scaled_GI = scale(SentimentGI), scaled_QDAP = scale(SentimentQDAP), scaled_HE = scale(SentimentHE), scaled_LM = scale(SentimentLM)) %>% 
-  mutate( mean_scaled_comment_sentiment = (scaled_GI + scaled_QDAP + scaled_HE + scaled_LM)/4 ) %>% mutate(total_scaled_sentiment_diff = mean_scaled_comment_sentiment - subreddit_scaled_total_mean) 
-  
+  mutate( mean_scaled_comment_sentiment = (scaled_GI + scaled_QDAP + scaled_HE + scaled_LM)/4 ) %>% mutate(relative_sentiment_diff = mean_scaled_comment_sentiment - subreddit_scaled_total_mean) 
+commentsWithSubreddit <- joined_final2[, c(4:16,21,23,25,31)]
+
+commentsWithSubreddit$relative_sentiment_diff <- as.vector(commentsWithSubreddit$relative_sentiment_diff)
+
+write.csv(commentsWithSubreddit, "fullComments.csv")
 
 ```
