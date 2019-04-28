@@ -34,10 +34,7 @@ fullComments <- mutate(fullComments,  Moderator = (grepl('moderator', Author_Fla
 
 ```{r}
 #Drop superflous columns to reduce file size.
-fullComments <- select(fullComments, -X, -Author_Flair_Text, -Author_Flair_CSS_Class, -Junk, -id, -Stickied, -Edited, -Distinguished, -Subreddit_Type)
-
-#And again
-fullComments <- select(fullComments, -NegativityGI, -PositivityGI, -NegativityHE, -PositivityHE, -NegativityLM, -PositivityLM, -NegativityQDAP, -PositivityQDAP, -RatioUncertaintyLM)
+fullComments <- select(fullComments, -X, -Author_Flair_Text, -Author_Flair_CSS_Class, -Junk, -id, -Stickied, -Edited, -Distinguished, -Subreddit_Type, -NegativityGI, -PositivityGI, -NegativityHE, -PositivityHE, -NegativityLM, -PositivityLM, -NegativityQDAP, -PositivityQDAP, -RatioUncertaintyLM)
 ```
 
 
