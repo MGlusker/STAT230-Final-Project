@@ -13,24 +13,117 @@ library(lmtest)
 
 ```{r}
 fullComments <- read.csv("fullComments.csv")
+```
 
+```{r}
 kitchenSink <- glm(Controversiality ~ WordCount + Gilded + WKND + Moderator + comments_in_subreddit + subreddit_scaled_total_mean + subreddit_diff_QDAP + subreddit_diff_LM +  relative_sentiment_diff, data = fullComments, family = "binomial")
 
+msummary(kitchenSink)
 
 #LRT full model vs. intercept only 
 lrtest(kitchenSink)
+```
 
+```{r}
 #kitchen sink model just without the gilded variable
 without_gilded <- glm(Controversiality ~ WordCount + WKND + Moderator + comments_in_subreddit + subreddit_scaled_total_mean + subreddit_diff_QDAP + subreddit_diff_LM +  relative_sentiment_diff, data = fullComments, family = "binomial")
 
 msummary(without_gilded)
+
 #LRT full model vs w/o gilded
 lrtest(kitchenSink, without_gilded)
+```
 
+# so we choose the model without gilded and compare that to model without moderator
+```{r}
 #w/o gilded or moderator
 without_moderator <- glm(Controversiality ~ WordCount + WKND + comments_in_subreddit + subreddit_scaled_total_mean + subreddit_diff_QDAP + subreddit_diff_LM +  relative_sentiment_diff, data = fullComments, family = "binomial")
 
 #LRT full model vs w/o gilded
 lrtest(without_gilded, without_moderator)
+```
+
+```{r}
+final_model <- without_gilded
+
+msummary(final_model)
+car::vif(final_model)
+```
+
+## randomization test for moderator
+```{r}
+# original (observed) slope for comparison
+observed_slope_Moderator <- coef(final_model)["ModeratorTRUE"]
+
+# for reproducibility, use set.seed()
+set.seed(2)
+
+# change the number within set.seed if you want different randomly shuffled values
+slopetest <- do(100) * (glm(Controversiality ~ WordCount + WKND + shuffle(Moderator) + 
+    comments_in_subreddit + subreddit_scaled_total_mean + subreddit_diff_QDAP + 
+    subreddit_diff_LM + relative_sentiment_diff, family = "binomial", 
+    data = fullComments))
+```
+
+## Create Plot for moderator
+```{r}
+# create a density plot to compare the distribution of slopes get from 
+gf_density(~ModeratorTRUE, data=slopetest, xlab="Slope Coefficients for Shuffled Moderator") %>%
+  gf_vline(xintercept = ~ observed_slope_Moderator, color="red")
+
+favstats(~ModeratorTRUE, data=slopetest)
+quantile(~ModeratorTRUE, data=slopetest, p=c(0.01,0.025,0.05))
+
+```
+
+## randomization test for comments_in_subreddit       
+```{r}
+# original (observed) slope for comparison
+observed_slope_Comments <- coef(final_model)["comments_in_subreddit"]
+
+# for reproducibility, use set.seed()
+set.seed(5)
+
+# change the number within set.seed if you want different randomly shuffled values
+slopetest2 <- do(100) * (glm(Controversiality ~ WordCount + WKND + Moderator + 
+    shuffle(comments_in_subreddit) + subreddit_scaled_total_mean + subreddit_diff_QDAP + 
+    subreddit_diff_LM + relative_sentiment_diff, family = "binomial", 
+    data = fullComments))
+```
+
+## Create Plot for comments_in_subreddit       
+```{r}
+# create a density plot to compare the distribution of slopes get from 
+gf_density(~comments_in_subreddit, data=slopetest2, xlab="Slope Coefficients for Shuffled comments_in_subreddit") %>%
+  gf_vline(xintercept = ~ observed_slope_Comments, color="red")
+
+favstats(~comments_in_subreddit, data=slopetest2)
+quantile(~comments_in_subreddit, data=slopetest2, p=c(0.01,0.025,0.05))
+
+```
+
+## randomization test for relative_sentiment_diff
+```{r}
+# original (observed) slope for comparison
+observed_slope_diff <- coef(final_model)["relative_sentiment_diff"]
+
+# for reproducibility, use set.seed()
+set.seed(5)
+
+# change the number within set.seed if you want different randomly shuffled values
+slopetest3 <- do(100) * (glm(Controversiality ~ WordCount + WKND + Moderator + 
+    comments_in_subreddit + subreddit_scaled_total_mean + subreddit_diff_QDAP + 
+    subreddit_diff_LM + shuffle(relative_sentiment_diff), family = "binomial", 
+    data = fullComments))
+```
+
+## Create Plot for relative_sentiment_diff       
+```{r}
+# create a density plot to compare the distribution of slopes get from 
+gf_density(~relative_sentiment_diff, data=slopetest3, xlab="Slope Coefficients for Shuffled comments_in_subreddit") %>%
+  gf_vline(xintercept = ~ observed_slope_diff, color="red")
+
+favstats(~relative_sentiment_diff, data=slopetest3)
+quantile(~relative_sentiment_diff, data=slopetest3, p=c(0.01,0.025,0.05))
 
 ```
