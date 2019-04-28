@@ -30,5 +30,7 @@ without_moderator <- glm(Controversiality ~ WordCount + WKND + comments_in_subre
 #LRT full model vs w/o gilded
 lrtest(without_gilded, without_moderator)
 
+
+
 ```
 
