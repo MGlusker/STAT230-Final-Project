@@ -1,0 +1,34 @@
+---
+title: "Final Models"
+output: html_notebook
+---
+
+
+```{r}
+library(mosaic)
+library(DescTools)
+library(lmtest)
+
+fullComments <- read.csv("fullComments.csv")
+
+kitchenSink <- glm(Controversiality ~ WordCount + Gilded + WKND + Moderator + comments_in_subreddit + subreddit_scaled_total_mean + subreddit_diff_QDAP + subreddit_diff_LM +  relative_sentiment_diff, data = fullComments, family = "binomial")
+
+
+#LRT full model vs. intercept only 
+lrtest(kitchenSink)
+
+#kitchen sink model just without the gilded variable
+without_gilded <- glm(Controversiality ~ WordCount + WKND + Moderator + comments_in_subreddit + subreddit_scaled_total_mean + subreddit_diff_QDAP + subreddit_diff_LM +  relative_sentiment_diff, data = fullComments, family = "binomial")
+
+msummary(without_gilded)
+#LRT full model vs w/o gilded
+lrtest(kitchenSink, without_gilded)
+
+#w/o gilded or moderator
+without_moderator <- glm(Controversiality ~ WordCount + WKND + comments_in_subreddit + subreddit_scaled_total_mean + subreddit_diff_QDAP + subreddit_diff_LM +  relative_sentiment_diff, data = fullComments, family = "binomial")
+
+#LRT full model vs w/o gilded
+lrtest(without_gilded, without_moderator)
+
+```
+
