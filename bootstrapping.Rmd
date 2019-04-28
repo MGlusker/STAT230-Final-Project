@@ -135,3 +135,9 @@ gf_density(~SentimentLM, data=slopetest, xlab="Slope Coefficients for Shuffled Q
 favstats(~SentimentLM, data=slopetest)
 quantile(~SentimentLM, data=slopetest, p=c(0.01,0.025,0.05))
 ```
+
+```{r}
+car::vif(final_model)
+
+cor(fullData[,names(fullData)])
+```
