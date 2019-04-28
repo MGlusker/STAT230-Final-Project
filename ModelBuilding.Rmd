@@ -17,6 +17,7 @@ library(lmtest)
 fullData <- read.csv('finalData.csv')
 fullData$Controversiality = as.factor(fullData$Controversiality)
 ```
+
 ##Logistic Models Predicting Controversiality
 ```{r}
 #Build a 'kitchenSink' logistic model with a ton of predictors 
