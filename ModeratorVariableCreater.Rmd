@@ -1,0 +1,51 @@
+---
+title: "Data Joining & Moderator Detection"
+author: "Noah Solomon"
+date: "4/28/2019"
+output: pdf_document
+---
+
+```{r}
+#Load in each of the four days of cleaned comments
+comments1 <- read.csv('finalData.csv', header = TRUE)
+comments2 <- read.csv('finalData02.csv', header = TRUE)
+comments3 <- read.csv('finalData03.csv', header = TRUE)
+comments4 <- read.csv('finalData04.csv', header = TRUE)
+```
+
+```{r}
+comments1 <- mutate(comments1, WKND = FALSE)
+comments2 <- mutate(comments2, WKND = FALSE)
+comments3 <- mutate(comments3, WKND = TRUE)
+comments4 <- mutate(comments4, WKND = TRUE)
+```
+
+```{r}
+#Join the four data frames together
+fullComments <- full_join(comments1, comments2)
+fullComments <- full_join(fullComments, comments3)
+fullComments <- full_join(fullComments, comments4)
+```
+```{r}
+#Add a new column to each row which approximates moderator by regex analysis of the user's flair
+
+fullComments <- mutate(fullComments,  Moderator = (grepl('moderator', Author_Flair_Text, ignore.case = TRUE) | grepl('moderator', Author_Flair_CSS_Class, ignore.case = TRUE)))
+```
+
+```{r}
+#Drop superflous columns to reduce file size.
+fullComments <- select(fullComments, -X, -Author_Flair_Text, -Author_Flair_CSS_Class, -Junk, -id, -Stickied, -Edited, -Distinguished, -Subreddit_Type)
+
+#And again
+fullComments <- select(fullComments, -NegativityGI, -PositivityGI, -NegativityHE, -PositivityHE, -NegativityLM, -PositivityLM, -NegativityQDAP, -PositivityQDAP, -RatioUncertaintyLM)
+```
+
+
+```{r}
+write.csv(fullComments, "fullComments.csv")
+```
+
+
+
+
+
