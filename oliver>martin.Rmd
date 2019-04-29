@@ -127,3 +127,85 @@ favstats(~relative_sentiment_diff, data=slopetest3)
 quantile(~relative_sentiment_diff, data=slopetest3, p=c(0.01,0.025,0.05))
 
 ```
+
+## test different models
+### split into training and testing
+```{r}
+# randomly select half of the observations to be in training dataset
+randomnums <- fullComments %>%
+  mutate(randomnum = rnorm(nrow(fullComments))) %>%
+  arrange(randomnum) 
+
+train.set <- randomnums[1:198999,]
+
+# save other half of the observations to be in test dataset
+test.set <- randomnums[199000:397998,]
+```
+
+### find model
+```{r}
+# full model
+train_model1 <- glm(Controversiality ~ WordCount + WKND + Moderator + comments_in_subreddit + subreddit_scaled_total_mean + subreddit_diff_QDAP + subreddit_diff_LM +  relative_sentiment_diff, data = train.set, family = "binomial")
+
+msummary(train_model1)
+
+# get rid of moderator
+train_no_moderator <- glm(Controversiality ~ WordCount + WKND + comments_in_subreddit + subreddit_scaled_total_mean + subreddit_diff_QDAP + subreddit_diff_LM +  relative_sentiment_diff, data = train.set, family = "binomial")
+
+# low pvalue so keep moderator
+lrtest(train_no_moderator, train_model1)
+
+# get rid of comments
+train_no_comments <- glm(Controversiality ~ WordCount + WKND + Moderator + subreddit_scaled_total_mean + subreddit_diff_QDAP + subreddit_diff_LM +  relative_sentiment_diff, data = train.set, family = "binomial")
+
+# high pvalue so get rid of comments
+lrtest(train_model1, train_no_comments)
+
+# full model minus comments
+train_model2 <- glm(Controversiality ~ WordCount + WKND + Moderator + subreddit_scaled_total_mean + subreddit_diff_QDAP + subreddit_diff_LM +  relative_sentiment_diff, data = train.set, family = "binomial")
+
+# full model (minus comments) without moderator
+train_no_moderator2 <- glm(Controversiality ~ WordCount + WKND + subreddit_scaled_total_mean + subreddit_diff_QDAP + subreddit_diff_LM +  relative_sentiment_diff, data = train.set, family = "binomial")
+
+# low pvalue so still keep moderator
+lrtest(train_no_moderator2, train_model2)
+
+final_train_model <- train_no_moderator2
+msummary(final_train_model)
+```
+
+### MAKE FUNCTION
+```{r}
+my.expit <- function(x) {
+  y <- exp(x) / (1+exp(x))
+  return(y)
+}
+
+accuracy <- function(model) {
+  
+  predictions <- asdf %>% 
+  mutate(predicted.logodds = predict(model, newdata = asdf),
+         predicted.prob1 = exp(predicted.logodds) / (1+exp(predicted.logodds)),
+         predicted.prob2 = my.expit(predicted.logodds),
+         # change the cutoff HERE
+         classified.outcome = ifelse(predicted.prob2 > 0.0003, yes=1, no=0),
+         binOutcome = ifelse(classified.outcome == Controversiality, 
+                               yes=1, no=0))
+
+  acc <- (tally(Controversiality ~ binOutcome, data = predictions)[1,1] + 
+            tally(Controversiality ~ binOutcome, data = predictions)[2,2]) /
+      sum(tally(Controversiality ~ binOutcome, data = predictions))
+  
+  return(acc)
+}
+
+asdf <- train.set %>% 
+  filter(WordCount > 20 | Controversiality == 1)
+
+tally(~Controversiality, asdf)
+  
+accuracy(final_train_model)
+accuracy(train_model1)
+accuracy(train_no_comments)
+
+```
