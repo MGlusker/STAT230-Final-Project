@@ -183,29 +183,48 @@ my.expit <- function(x) {
 
 accuracy <- function(model) {
   
-  predictions <- asdf %>% 
-  mutate(predicted.logodds = predict(model, newdata = asdf),
-         predicted.prob1 = exp(predicted.logodds) / (1+exp(predicted.logodds)),
+  predictions <- test.set %>% 
+  mutate(predicted.logodds = predict(model, newdata = test.set),
+         
          predicted.prob2 = my.expit(predicted.logodds),
+         
          # change the cutoff HERE
-         classified.outcome = ifelse(predicted.prob2 > 0.0003, yes=1, no=0),
-         binOutcome = ifelse(classified.outcome == Controversiality, 
-                               yes=1, no=0))
+         classified.outcome = ifelse(predicted.prob2 > 0.1, yes=1, no=0))
 
-  acc <- (tally(Controversiality ~ binOutcome, data = predictions)[1,1] + 
-            tally(Controversiality ~ binOutcome, data = predictions)[2,2]) /
-      sum(tally(Controversiality ~ binOutcome, data = predictions))
+  acc <- (tally(Controversiality ~ classified.outcome, data = predictions)[1,1] + 
+            tally(Controversiality ~ classified.outcome, data = predictions)[2,2]) /
+      sum(tally(Controversiality ~ classified.outcome, data = predictions))
   
   return(acc)
 }
 
-asdf <- train.set %>% 
-  filter(WordCount > 20 | Controversiality == 1)
-
-tally(~Controversiality, asdf)
-  
-accuracy(final_train_model)
-accuracy(train_model1)
-accuracy(train_no_comments)
-
 ```
+
+#Martin addition
+```{r}
+set.seed(123)
+filtered <- fullComments %>% 
+  #filter(Controversiality == 1 | WordCount > 10 | Score > 5 | Score < -5)
+  filter(WordCount > 10 | Score > 5 | Score < -5)
+
+
+randomnums <- filtered %>%
+  mutate(randomnum = rnorm(nrow(filtered))) %>%
+  arrange(randomnum) 
+
+#train.set <- randomnums[1:101669,]
+#train.set <- randomnums[1:196212,]
+train.set <- randomnums[1:99416,]
+
+# save other half of the observations to be in test dataset
+#test.set <- randomnums[101670:203338,]
+#test.set <- randomnums[196213:392425,]
+test.set <- randomnums[99417:198832,]
+
+
+
+martin_model<- glm(Controversiality ~ WordCount +  SentimentQDAP + SentimentGI+ subreddit_scaled_total_mean + subreddit_diff_QDAP + subreddit_diff_LM , data = train.set, family = "binomial")
+
+accuracy(martin_model)
+```
+

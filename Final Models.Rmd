@@ -84,22 +84,17 @@ msummary(kitchenSink1)
 lrtest(kitchenSink1)
 
 #kitchen sink model just without the gilded variable
-without_gilded1<- glm(Controversiality ~ WordCount + WKND + Moderator + comments_in_subreddit + subreddit_scaled_total_mean + subreddit_diff_QDAP + subreddit_diff_LM +  relative_sentiment_diff, data =  filtered, family = "binomial")
+without_gilded1 <- glm(Controversiality ~ WordCount + WKND + Moderator + comments_in_subreddit + subreddit_scaled_total_mean + subreddit_diff_QDAP + subreddit_diff_LM +  relative_sentiment_diff, data =  filtered, family = "binomial")
 
 msummary(without_gilded1)
 #LRT full model vs w/o gilded
 lrtest(kitchenSink1, without_gilded1)
 
 #w/o sub comments or relative sentiment diff
-without_insig1 <- glm(Controversiality ~ WordCount +  SentimentQDAP + SentimentGI+ subreddit_scaled_total_mean + subreddit_diff_QDAP, data = filtered, family = "binomial")
+without_insig1 <- glm(Controversiality ~ WordCount +  SentimentQDAP + SentimentGI+ subreddit_scaled_total_mean + subreddit_diff_QDAP + subreddit_diff_LM , data = filtered, family = "binomial")
 
-msummary(without_insig)
+msummary(without_insig1)
 
-without_LM <- glm(Controversiality ~ WordCount + WKND + subreddit_scaled_total_mean + subreddit_diff_QDAP, data = filtered, family = "binomial")
-
-msummary(without_LM)
-
-lrtest(without_LM, without_insig)
 
 
 ```
