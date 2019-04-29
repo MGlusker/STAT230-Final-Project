@@ -66,7 +66,7 @@ msummary(without_gilded)
 #Filtered Data
 ```{r}
 filtered <- fullComments %>% 
-  filter(Controversiality == 1 | WordCount > 10 | Score > 5 | Score < -5) 
+  filter( WordCount > 10 | Score > 5 | Score < -5) 
 
 data1 <-fullComments %>% 
   filter(Controversiality == 1)%>% 
@@ -94,6 +94,7 @@ lrtest(kitchenSink1, without_gilded1)
 without_insig1 <- glm(Controversiality ~ WordCount +  SentimentQDAP + SentimentGI+ subreddit_scaled_total_mean + subreddit_diff_QDAP + subreddit_diff_LM , data = filtered, family = "binomial")
 
 msummary(without_insig1)
+lrtest(without_insig1, without_gilded1)
 
 
 
