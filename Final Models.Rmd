@@ -8,14 +8,28 @@ output: html_notebook
 library(mosaic)
 library(DescTools)
 library(lmtest)
+library(corrplot)
+library(leaps)
 
-fullComments <- read.csv("fullComments.csv")
+```
 
-kitchenSink <- glm(Controversiality ~ WordCount + Gilded + WKND + Moderator + comments_in_subreddit + subreddit_scaled_total_mean + subreddit_diff_QDAP + subreddit_diff_LM +  relative_sentiment_diff, data = fullComments, family = "binomial")
+
+
+#Unfiltered data
+```{r}
+
+rawdata <- read.csv("fullComments.csv")
+
+fullComments <- rawdata %>% 
+  filter(complete.cases(rawdata))
+
+kitchenSink <- glm(Controversiality ~ WordCount + Gilded + WKND + Moderator + SentimentQDAP + SentimentLM + SentimentHE + SentimentGI + comments_in_subreddit + subreddit_scaled_total_mean + subreddit_diff_QDAP + subreddit_diff_LM +  relative_sentiment_diff, data = fullComments, family = "binomial")
 
 
 #LRT full model vs. intercept only 
 lrtest(kitchenSink)
+
+msummary(kitchenSink)
 
 #kitchen sink model just without the gilded variable
 without_gilded <- glm(Controversiality ~ WordCount + WKND + Moderator + comments_in_subreddit + subreddit_scaled_total_mean + subreddit_diff_QDAP + subreddit_diff_LM +  relative_sentiment_diff, data = fullComments, family = "binomial")
@@ -29,8 +43,113 @@ without_moderator <- glm(Controversiality ~ WordCount + WKND + comments_in_subre
 
 #LRT full model vs w/o gilded
 lrtest(without_gilded, without_moderator)
+#moderator is significant
 
+msummary(without_moderator)
+
+#Comparing diff to general without diff (without_gilded)
+without_diff <- glm(Controversiality ~ WordCount + WKND + comments_in_subreddit + subreddit_scaled_total_mean, data = fullComments, family = "binomial")
+
+msummary(without_diff)
+
+#LRT diff vs. no diff
+lrtest(without_diff, without_gilded)
+
+
+without_comments <- glm(Controversiality ~ WordCount + WKND + Moderator + subreddit_scaled_total_mean + subreddit_diff_QDAP + subreddit_diff_LM +  relative_sentiment_diff, data = fullComments, family = "binomial")
+
+lrtest(without_comments, without_gilded)
+
+msummary(without_gilded)
+```
+
+#Filtered Data
+```{r}
+filtered <- fullComments %>% 
+  filter(Controversiality == 1 | WordCount > 10 | Score > 5 | Score < -5) 
+
+data1 <-fullComments %>% 
+  filter(Controversiality == 1)%>% 
+  summarize(n())
+
+data2 <- filtered %>% 
+  summarize(n())
+
+
+kitchenSink1 <- glm(Controversiality ~ WordCount + Gilded + WKND + Moderator + comments_in_subreddit + subreddit_scaled_total_mean + subreddit_diff_QDAP + subreddit_diff_LM +  relative_sentiment_diff, data = filtered, family = "binomial")
+
+msummary(kitchenSink1)
+
+#LRT full model vs. intercept only 
+lrtest(kitchenSink1)
+
+#kitchen sink model just without the gilded variable
+without_gilded1<- glm(Controversiality ~ WordCount + WKND + Moderator + comments_in_subreddit + subreddit_scaled_total_mean + subreddit_diff_QDAP + subreddit_diff_LM +  relative_sentiment_diff, data =  filtered, family = "binomial")
+
+msummary(without_gilded1)
+#LRT full model vs w/o gilded
+lrtest(kitchenSink1, without_gilded1)
+
+#w/o sub comments or relative sentiment diff
+without_insig1 <- glm(Controversiality ~ WordCount +  SentimentQDAP + SentimentGI+ subreddit_scaled_total_mean + subreddit_diff_QDAP, data = filtered, family = "binomial")
+
+msummary(without_insig)
+
+without_LM <- glm(Controversiality ~ WordCount + WKND + subreddit_scaled_total_mean + subreddit_diff_QDAP, data = filtered, family = "binomial")
+
+msummary(without_LM)
+
+lrtest(without_LM, without_insig)
 
 
 ```
+
+#Correlation plot
+```{r}
+
+cor_data <- fullComments[,c(5,7:11, 14:18)]
+cor_data$Score <- as.numeric(cor_data$Score)
+cor_data$WordCount <- as.numeric(cor_data$WordCount)
+cor_data$comments_in_subreddit <- as.numeric(cor_data$comments_in_subreddit)
+
+matrix <- round(cor(cor_data, use = "complete.obs"), 3)
+corrplot(matrix, method = "circle", type = "upper")
+# SentimentLM is highly correlated with subreddit_diff_LM and same for QDAP. This means subreddits are relatively homogenous. 
+# Relative_sentiment_diff and diff for QDAP and LM are very significant 
+# All four nominal sentiments are very correlated with relative sentiment diff. This means something similar to the first point. 
+```
+
+#Empirical Logit Plot
+```{r}
+
+# empirical logit plot function 
+emplogitplot <- function(resp, pred, numbreak = 10) {
+  
+# assumes resp is dichotomous with values 0 and 1
+tmpGroup <- cut(pred, breaks = numbreak) 
+binned.y <- mosaic::mean(~ resp | tmpGroup)
+binned.x <- mosaic::mean(~ pred | tmpGroup)
+logy <- mosaic::logit(binned.y)
+ds <- data.frame(logy, binned.x)
+gf_point(logy ~ binned.x, cex = 2, pch = 19, data=ds) %>%
+  gf_line() %>%
+  gf_labs(x = "Binned Predictor", y = "Empirical Logit for Bin")
+} 
+
+#call this as:
+#with(data set, emplogitplot(responsevariablename, predictorvariablename, numbreaks/bins))
+
+#WordCount + WKND + Moderator + subreddit_scaled_total_mean + subreddit_diff_QDAP + subreddit_diff_LM +  relative_sentiment_diff + comments_in_subreddit
+
+with(fullComments, emplogitplot(Controversiality, WordCount , 10))
+with(fullComments, emplogitplot(Controversiality, subreddit_scaled_total_mean , 10))
+with(fullComments, emplogitplot(Controversiality, subreddit_diff_QDAP , 5))
+with(fullComments, emplogitplot(Controversiality, subreddit_diff_LM , 5))
+with(fullComments, emplogitplot(Controversiality, relative_sentiment_diff , 10))
+with(fullComments, emplogitplot(Controversiality, comments_in_subreddit , 10))
+
+```
+
+
+
 
