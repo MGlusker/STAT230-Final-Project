@@ -120,7 +120,7 @@ slopetest3 <- do(100) * (glm(Controversiality ~ WordCount + WKND + Moderator +
 ## Create Plot for relative_sentiment_diff       
 ```{r}
 # create a density plot to compare the distribution of slopes get from 
-gf_density(~relative_sentiment_diff, data=slopetest3, xlab="Slope Coefficients for Shuffled comments_in_subreddit") %>%
+gf_density(~relative_sentiment_diff, data=slopetest3, xlab="Slope Coefficients for Shuffled relative_sentiment_diff") %>%
   gf_vline(xintercept = ~ observed_slope_diff, color="red")
 
 favstats(~relative_sentiment_diff, data=slopetest3)
@@ -226,5 +226,16 @@ test.set <- randomnums[99417:198832,]
 martin_model<- glm(Controversiality ~ WordCount +  SentimentQDAP + SentimentGI+ subreddit_scaled_total_mean + subreddit_diff_QDAP + subreddit_diff_LM , data = train.set, family = "binomial")
 
 accuracy(martin_model)
+
+msummary(martin_model)
+
+oliver_model<- glm(Controversiality ~ WordCount +  SentimentQDAP + subreddit_scaled_total_mean + subreddit_diff_QDAP + subreddit_diff_LM , data = train.set, family = "binomial")
+
+accuracy(oliver_model)
+
+lrtest(martin_model, oliver_model)
+
+msummary(oliver_model)
+
 ```
 
