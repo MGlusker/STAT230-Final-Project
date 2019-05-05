@@ -204,10 +204,10 @@ accuracy <- function(model) {
 ```{r}
 set.seed(123)
 filtered <- fullComments %>% 
-  #filter(Controversiality == 1 | WordCount > 10 | Score > 5 | Score < -5)
-  filter(WordCount > 10 | Score > 5 | Score < -5)
+  filter(WordCount > 10 | Score > 5 | Score < -5) %>% 
+  filter(Controversiality==1)
 
-
+4481/198832
 randomnums <- filtered %>%
   mutate(randomnum = rnorm(nrow(filtered))) %>%
   arrange(randomnum) 
@@ -225,7 +225,10 @@ test.set <- randomnums[99417:198832,]
 
 martin_model<- glm(Controversiality ~ WordCount +  SentimentQDAP + SentimentGI+ subreddit_scaled_total_mean + subreddit_diff_QDAP + subreddit_diff_LM , data = train.set, family = "binomial")
 
+
+msummary(martin_model)
 accuracy(martin_model)
+
 
 msummary(martin_model)
 
@@ -236,6 +239,19 @@ accuracy(oliver_model)
 lrtest(martin_model, oliver_model)
 
 msummary(oliver_model)
+
+
+without_gilded1 <- glm(Controversiality ~ WordCount + WKND + Moderator + comments_in_subreddit + subreddit_scaled_total_mean + subreddit_diff_QDAP + subreddit_diff_LM +  relative_sentiment_diff, data =  filtered, family = "binomial")
+
+accuracy(without_gilded1)
+
+simple_model <- glm(Controversiality ~ WordCount +  subreddit_scaled_total_mean , data =  filtered, family = "binomial")
+
+accuracy(simple_model)
+
+model1<- glm(Controversiality ~ SentimentQDAP + Moderator, data =filtered, family = "binomial")
+
+accuracy(model1)
 
 ```
 
