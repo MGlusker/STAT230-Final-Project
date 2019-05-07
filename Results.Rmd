@@ -80,10 +80,10 @@ lrtest(without_gilded, without_moderator_gilded)
 final_model <- without_moderator_gilded
 ```
 
+### Table 1.1
 ```{r, echo=FALSE}
 msummary(final_model)
 ```
-*Table 1.1*
 
 ## Randomization Tests
 
@@ -257,6 +257,8 @@ balanced_final_model <- balanced_without_moderator_WKND_comments
 lrtest(balanced_final_model)
 ```
 
+### Table 3.1 
+
 ```{r, echo=FALSE}
 msummary(balanced_final_model)
 ```
@@ -290,4 +292,22 @@ balanced_accuracy(balanced_final_model)
 
 intercept_only_accuracy <- 9064 / (9064 + 9064)
 intercept_only_accuracy
+```
+
+## Additional Insights
+
+The researchers also looked at a correlation plot (Figure 4.1) between the quantitative variables in their dataset. *SentimentLM* is highly correlated with *subreddit_diff_LM*, as well as *SentimentQDAP* with *subreddit_diff_QDAP*. This means subreddits are relatively homogenous and have similar average sentiments. This makes sense intituively as most subreddits will have a positive and negative comments that will balance out. Another takeaway from Figure 4.1 is that all nominal snetiment variables are highly correlated, which means that each library is relatively similar and contains much of the same information. 
+
+### Figure 4.1
+```{r, echo=FALSE}
+cor_data <- fullComments[,c(5,7:11, 14:18)]
+cor_data$Score <- as.numeric(cor_data$Score)
+cor_data$WordCount <- as.numeric(cor_data$WordCount)
+cor_data$comments_in_subreddit <- as.numeric(cor_data$comments_in_subreddit)
+
+matrix <- round(cor(cor_data, use = "complete.obs"), 3)
+corrplot(matrix, method = "circle", type = "upper")
+# SentimentLM is highly correlated with subreddit_diff_LM and same for QDAP. This means subreddits are relatively homogenous. 
+# Relative_sentiment_diff and diff for QDAP and LM are very significant 
+# All four nominal sentiments are very correlated with relative sentiment diff. This means something similar to the first point. 
 ```
