@@ -7,6 +7,9 @@ output: html_notebook
 
 ```{r}
 library(dplyr)
+library(mosaic)
+library(DescTools)
+library(lmtest)
 ```
 
 
@@ -22,13 +25,95 @@ controversial <- fullComments %>%
 noncontroversial <- fullComments %>% 
   filter(Controversiality != 1) 
 
-n <- 
-  sample(noncontroversial$X, size = 9064, replace = FALSE)
+n <-  sample(noncontroversial$X, size = 9064, replace = FALSE)
 
 sampled_noncontroversial <- noncontroversial %>% 
-  filter()
+  filter(noncontroversial$X  %in%  n)
 
 sampled_data <- rbind(controversial, sampled_noncontroversial)
 
 
 ```
+
+
+```{r}
+kitchenSink <- glm(Controversiality ~ WordCount + Gilded + WKND + Moderator + comments_in_subreddit + SentimentQDAP + SentimentGI + SentimentLM + SentimentHE + subreddit_scaled_total_mean + subreddit_diff_QDAP + subreddit_diff_LM +  relative_sentiment_diff, data = sampled_data, family = "binomial")
+
+msummary(kitchenSink)
+
+#without gilded
+without_gilded <- glm(Controversiality ~ WordCount + WKND + Moderator + comments_in_subreddit + SentimentQDAP + SentimentGI + SentimentLM + SentimentHE + subreddit_scaled_total_mean + subreddit_diff_QDAP + subreddit_diff_LM +  relative_sentiment_diff, data = sampled_data, family = "binomial")
+
+msummary(without_gilded)
+
+#without moderator
+without_moderator <- glm(Controversiality ~ WordCount + WKND + comments_in_subreddit + + SentimentQDAP + SentimentGI + SentimentLM + SentimentHE + subreddit_scaled_total_mean + subreddit_diff_QDAP + subreddit_diff_LM +  relative_sentiment_diff, data = sampled_data, family = "binomial")
+
+msummary(without_moderator)
+
+#without insignificant 
+without_insig <- glm(Controversiality ~ WordCount + WKND + comments_in_subreddit + SentimentQDAP + SentimentGI + subreddit_scaled_total_mean + subreddit_diff_QDAP + subreddit_diff_LM +  relative_sentiment_diff, data = sampled_data, family = "binomial")
+
+msummary(without_insig)
+
+#final1
+final1 <- glm(Controversiality ~ WordCount + WKND + comments_in_subreddit + SentimentQDAP + SentimentGI + subreddit_scaled_total_mean + subreddit_diff_QDAP , data = sampled_data, family = "binomial")
+
+msummary(final1)
+lrtest(final1, without_insig)
+
+#intercerpt only
+intercept_only <- glm(Controversiality~ 1, data = sampled_data, family = "binomial")
+msummary(intercept_only)
+```
+
+### MAKE FUNCTION
+```{r}
+my.expit <- function(x) {
+  y <- exp(x) / (1+exp(x))
+  return(y)
+}
+
+accuracy <- function(model) {
+  
+  predictions <- test.set %>% 
+  mutate(predicted.logodds = predict(model, newdata = test.set),
+         
+         predicted.prob2 = my.expit(predicted.logodds),
+         
+         # change the cutoff HERE
+         classified.outcome = ifelse(predicted.prob2 > 0.5, yes=1, no=0))
+
+  acc <- (tally(Controversiality ~ classified.outcome, data = predictions)[1,1] + 
+            tally(Controversiality ~ classified.outcome, data = predictions)[2,2]) /
+      sum(tally(Controversiality ~ classified.outcome, data = predictions))
+  
+  return(acc)
+}
+```
+
+#test and train sets
+```{r}
+set.seed(3)
+filtered <- sampled_data
+
+
+randomnums <- filtered %>%
+  mutate(randomnum = rnorm(nrow(filtered))) %>%
+  arrange(randomnum) 
+
+train.set <- randomnums[1:9064,]
+
+test.set <- randomnums[9065:18128,]
+```
+
+```{r}
+accuracy(final1)
+accuracy(without_insig)
+accuracy(kitchenSink)
+accuracy(without_gilded)
+accuracy(without_moderator)
+
+```
+
+
