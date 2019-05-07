@@ -63,6 +63,25 @@ final1 <- glm(Controversiality ~ WordCount + WKND + comments_in_subreddit + Sent
 msummary(final1)
 lrtest(final1, without_insig)
 
+wordcount_only <- glm(Controversiality ~WordCount, data=sampled_data, family="binomial")
+msummary(wordcount_only)
+
+sentiment_only <- glm(Controversiality ~ WordCount+ SentimentQDAP + subreddit_scaled_total_mean + subreddit_diff_QDAP, data=sampled_data, family="binomial")
+
+msummary(sentiment_only)
+accuracy(sentiment_only)
+
+sentiment_only2 <- glm(Controversiality ~  SentimentQDAP + subreddit_scaled_total_mean + subreddit_diff_QDAP, data=sampled_data, family="binomial")
+
+subreddit_only <- glm(Controversiality ~ subreddit_scaled_total_mean, data=sampled_data, family = "binomial")
+
+
+msummary(sentiment_only2)
+msummary(subreddit_only)
+accuracy(subreddit_only)
+
+wordcount_only <- glm(Controversiality ~WordCount, data=sampled_data, family="binomial")
+msummary(wordcount_only)
 #intercerpt only
 intercept_only <- glm(Controversiality~ 1, data = sampled_data, family = "binomial")
 msummary(intercept_only)
@@ -120,6 +139,7 @@ accuracy(without_insig)
 accuracy(kitchenSink)
 accuracy(without_gilded)
 accuracy(without_moderator)
+accuracy(wordcount_only)
 
 final1_dist <- do(100)*accuracy(final1)
 gf_density(~accuracy, data=final1_dist)
@@ -137,7 +157,17 @@ d<- mean(wo_gilded$accuracy)
 wo_moderator <- do(100)*accuracy(without_moderator)
 e<-mean(wo_moderator$accuracy)
 
-results<- c(a,b,c,d,e)
+sentiment_dist <- do(100)*accuracy(sentiment_only)
+f<-mean(sentiment_dist$accuracy)
+
+subreddit_dist <- do(100)*accuracy(subreddit_only)
+g<-mean(subreddit_dist$accuracy)
+
+sentiment_dist2 <- do(100)*accuracy(sentiment_only2)
+h<-mean(sentiment_dist2$accuracy)
+
+
+results<- c(a,b,c,d,e,f)
 kable(results)
 ```
 
