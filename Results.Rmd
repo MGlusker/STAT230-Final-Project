@@ -87,7 +87,7 @@ msummary(final_model)
 
 ## Randomization Tests
 
-In the final model only three variables had p-values that were greater than 0.001: *comments_in_subreddit*, *isWeekend*, and *relative_sentiment_diff* (with p-values of 0.0336, 0.0051, and 0.0035 respectively). To confirm that these variables were significant, the researchers decided to perform a randomization test on each to determine if the observed coefficients were statistically significant or not. The results of these randomization tests can be seen in Figures *2.1*, *2.2*, and *2.3* below where the red line indicates the observed coefficient and the density plot shows the randomization distribution. If the red line falls far outside of the density plot, this means that the observed coefficient would not be expected to found by chance and is thus statistically significant. While the researchers were only able to run 100 randomization tests (as opposed to the 10,000 that they hoped to) for each variable, this was due to the limit on computing power that they had access to. This explains the imperfect normal distribution of the plots below, but as the observed coefficients for each predictor fell outside of each randomization distribution, the researchers were able to conclude that each of the three predictors were indeed statstically significant, as the initial p-values for each suggested.
+In the final model only three variables had p-values that were greater than 0.001: *comments_in_subreddit*, *WKND*, and *relative_sentiment_diff* (with p-values of 0.0336, 0.0051, and 0.0035 respectively). To confirm that these variables were significant, the researchers decided to perform a randomization test on each to determine if the observed coefficients were statistically significant or not. The results of these randomization tests can be seen in Figures *2.1*, *2.2*, and *2.3* below where the red line indicates the observed coefficient and the density plot shows the randomization distribution. If the red line falls far outside of the density plot, this means that the observed coefficient would not be expected to found by chance and is thus statistically significant. While the researchers were only able to run 100 randomization tests (as opposed to the 10,000 that they hoped to) for each variable, this was due to the limit on computing power that they had access to. This explains the imperfect normal distribution of the plots below, but as the observed coefficients for each predictor fell outside of each randomization distribution, the researchers were able to conclude that each of the three predictors were indeed statstically significant, as the initial p-values for each suggested.
 
 ### Figure 2.1
 ```{r, echo=FALSE}
@@ -125,7 +125,7 @@ slopetest2 <- do(100) * (glm(Controversiality ~ WordCount + shuffle(WKND) +
     data = train.set))
 
 # create a density plot to compare the distribution of slopes get from 
-gf_density(~WKNDTRUE, data=slopetest2, xlab="Slope Coefficients for Shuffled isWeekend") %>%
+gf_density(~WKNDTRUE, data=slopetest2, xlab="Slope Coefficients for Shuffled WKND") %>%
   gf_vline(xintercept = ~ observed_slope_WKND, color="red")
 ```
 
@@ -286,7 +286,7 @@ balanced_accuracy <- function(model) {
   return(acc)
 }
 
-balaned_accuracy(balanced_final_model)
+balanced_accuracy(balanced_final_model)
 
 intercept_only_accuracy <- 9064 / (9064 + 9064)
 intercept_only_accuracy
