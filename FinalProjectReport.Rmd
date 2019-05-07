@@ -1,37 +1,339 @@
 ---
 title: "STAT230--Final Project"
-author: "Noah Soloman, Oliver Baldwin Edwards, and Martin Glusker"
+author: "Noah Solomon, Oliver Baldwin Edwards, and Martin Glusker"
 output:
   pdf_document: default
 ---
-##Abstract
+
+#Abstract
 The goal of this study was to determine which online comments on the social media website Reddit.com were defined as controversial, based on sentiment analysis and other variables. Multiple logistic regression was used to predict controversiality on a ~400,000 observation data set, in addition to a smaller, balanced dataset with an even balance of controversial and non-controversial comments. No remarkable results were found using the original dataset as none of our models differed meaningfully from the intercept only model. Using the balanced dataset the best model had an accuracy of 57.430%, relative the intercept only model accuracy of 50%. The best model was *Controversiality* ~ *WordCount* + *subreddit_scaled_total_mean* + *subreddit_diff_QDAP* + *subreddit_diff_LM* + *relative_sentiment_diff*. Sentiment predictors were found to be associated with controversy, and significantly so due to the large data set, but they were not found to be meaningful as there remained a lot of randomness not explained by the sentiment predictors. 
 
-##Background and Significance
+#Background and Significance
 This project examined how people interact on online forums and social media, an area of particularly relevance in an age increasingly defined by how people interact with one another online. Given the anonymous nature of many internet forums, there has been much speculation about the toxicity of these forums, asking in particular whether these forums incentivize mean of derisive comments? Does the average sentiment of a particular community (in the case of this study, a subreddit) influence which comments are rewarded and popular? For example, do toxic communities reward toxic comments? Or is there another relationship at play?
 
 The primary goal of this study was to see what sort of comments garner attention in the online forums Reddit.com. Researchers were interested in examining the relationship between the sentiment of a comment, and that comment’s controversiality (a binary output produced by Reddit). Researchers also looked at the whether the overall average sentiment of a subreddit (a sub-community within Reddit) effects whether positive or negative comments on that subreddit garner attention. For example researchers hypothesized that a subreddit such as ‘r/aww’, dedicated to sharing photos of cute animals and which was expected to have a very positive average sentiment, would reward comments with positive sentiment much more than negative sentiment. This trend was also hypothesized to apply to toxic subreddits on Reddit, and the relationship between negative and positive comments and controversiality in the context of more negative communities.
 
-##Methods
-###Data collection 
+#Methods
+##Data collection 
 These data were collected via a census of comments posted on reddit.com on 01/01/18, 
 14/01/18, 01/02/18, 17/02/18 yielding approximately 8 million comments. For usability, 100,000 of the comments from each day were then selected at random and the rest were discarded. The data set was then cleaned by removing duplicate rows and those with formatting errors, resulting in around 399,000 samples in the final data set. After modeling with this initial dataset, the researchers determined that the percentage of non-controversial comments was too small, as only ~2% of comments in the dataset were controversial. A balanced dataset was created, where all controversial comments were included, and a equal number of randomly selected non-controversial comments were selected. 
 
 
-###Variable creation 
-Response variable examined was score (equal to upvotes-downvotes), predicted using Stefan Feuerriegel & Nicolas Proellochs’ Sentiment Analysis package using the QDAP dictionary compiled by Tyler Rinker. In particular, sentiment analysis was run on the body of the comment, and SentimentQDAP, NegativityQDAP, and PositivityQDAP were used as predictor variables. NegativityQDAP is a quantitative value of how negative the comment was, based on the particular dictionary used, in this case QDAP. In a similar vein, PositivityQDAP is a vlaue of how positive the value is. SentimentQDAP is simply positivity - negativity.
+##Variable creation 
+Response variable examined was score (equal to upvotes-downvotes), predicted using Stefan Feuerriegel & Nicolas Proellochs’ Sentiment Analysis package using the QDAP dictionary compiled by Tyler Rinker. In particular, sentiment analysis was run on the body of the comment, and SentimentQDAP, NegativityQDAP, and PositivityQDAP were used as predictor variables. NegativityQDAP is a quantitative value of how negative the comment was, based on the particular dictionary used, in this case QDAP. In a similar vein, PositivityQDAP is a value of how positive the value is. SentimentQDAP is simply positivity - negativity.
 
 Two new categories of variables were also created, one associated with the comment's sentiment relative to its subreddit's average sentiment. This variable, called 'subreddit_scaled_total_mean' represents the mean of all four different sentiment variables for each subreddit, which were then scaled, and the mean taken of the four scaled mean sentiment variables for each subreddit. This represents an average sentiment score (in units of standard deviation, as it’s scaled) for each subreddit. Difference variables were then created, which represent the difference between a specific comment’s sentiment and its subreddit’s average sentiment. This was done in nominal terms for each of the four sentiment libraries, in addition to a scaled version that represents all four variables. 
 
 
-###Analytic Methods
+##Analytic Methods
 Multiple logistic regression was used to study the association between controversy and SentimentQDAP, NegativityQDAP, PositivityQDAP, and Moderator as well as related factors. The researchers conducted drop in deviance tests to examine which sets of variables produce an effective model. Accuracy on a testing subset of the data was also used as a metric for determining model quality. Accuracy was defined as (correct predictions/total sample size). Finally, randomization tests were then used to increase the robustness of the conclusions.
 
 
-##Results
-Typically, results sections start with descriptive statistics, e.g. what percent of the sample is male/female, what is the mean GPA overall, in the different groups, etc. Figures can be nice to illustrate these differences! However, information presented must be relevant in helping to answer the research question(s) of interest. Typically, inferential (i.e. hypothesis tests) statistics come next. Tables can often be helpful for results from multiple regression. Do not give computer output here! This should look like a peer-reviewed journal article results section. Tables and figures should be labeled, embedded in the text, and referenced appropriately. The results section typically makes for fairly dry reading. It does not explain the impact of findings, it merely highlights and reports statistical information. 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(mosaic)
+library(DescTools)
+library(lmtest)
+library(SentimentAnalysis)
+library(dplyr)
+library(corrplot)
+library(leaps)
+library(tidyverse)
+library(knitr)
+```
 
-##Discussion
+# Results
+## Data Frame
+
+The researchers' initial data frame was obtained from http://files.pushshift.io/reddit/comments/daily/ and contained all of the comments from the entirety Reddit for one day. They collected four days worth of data (two weekends and two weekdays) and took a random sample of 100,000 comments from each day to end up with a total of roughly 400,000 comments across four days of Reddit content. With this data frame the researchers then added columns that used the R package SentimentAnalysis to keep track of the sentiment of each comment according to different sentiment dictionaries. They also created metrics that kept track of the average sentiment of each comments Subreddit as well as the difference between a comment's sentiment and the average sentiment of their Subreddit. The final dataframe then contained 397,998 observations with 18 variables. The variable of interest that the researchers hoped to predict was controversiality, a binary variable where 1 indicates a comment is controversial, and 0 indicates a comment is not controversial. In the entire dataset, 2.28% of comments were controversial (9,064 controversial comments).
+
+```{r, echo=FALSE}
+fullComments <- read.csv("fullComments.csv")
+
+tally(~Controversiality, data=fullComments)
+```
+
+The researchers then decided to split the dataframe into a training set and testing set so that they could determine a model based on half of the data and then test the accuracy of that model on the second half of the data. 
+
+```{r, echo=FALSE, include=FALSE}
+#SPLIT DATA INTO TRAIN AND TEST
+set.seed(2)
+# randomly select half of the observations to be in training dataset
+randomnums <- fullComments %>%
+  mutate(randomnum = rnorm(nrow(fullComments))) %>%
+  arrange(randomnum) 
+
+train.set <- randomnums[1:198999,]
+
+# save other half of the observations to be in test dataset
+test.set <- randomnums[199000:397998,]
+```
+
+## Initial Modeling 
+
+For variable selection, the researchers decided to start with a model that used all of the newly created variables (as well as all of the original variables from the initial dataframe) and use likelihood ratio tests to determine which variables were the best at predicting controversiality. The initial model showed that only the variables *Gilded* and *Moderator* were not significant at the 0.05 level. A series of likelihood ratio tests were thus preformed to determine whether or not these variables should be included in our final model. The researchers determined that the variables *Gilded* and *Moderator* both were not significant predictors and did not add anything to the model. From the first series of models, the best model that was found thus included 7 predictor variables and can be seen below in *Table 1.1*. 
+
+```{r, include=FALSE}
+fullModel <- glm(Controversiality ~ WordCount + Gilded + WKND + Moderator + comments_in_subreddit + subreddit_scaled_total_mean + subreddit_diff_QDAP + subreddit_diff_LM +  relative_sentiment_diff, data = train.set, family = "binomial")
+
+msummary(fullModel)
+
+#LRT full model vs. intercept only 
+lrtest(fullModel)
+
+#full model without the gilded variable
+without_gilded <- glm(Controversiality ~ WordCount + WKND + Moderator + comments_in_subreddit + subreddit_scaled_total_mean + subreddit_diff_QDAP + subreddit_diff_LM +  relative_sentiment_diff, data = train.set, family = "binomial")
+
+msummary(without_gilded)
+
+#LRT full model vs w/o gilded
+lrtest(fullModel, without_gilded)
+# so we determine that we don't want Gilded
+
+#w/o gilded or moderator
+without_moderator_gilded <- glm(Controversiality ~ WordCount + WKND + comments_in_subreddit + subreddit_scaled_total_mean + subreddit_diff_QDAP + subreddit_diff_LM +  relative_sentiment_diff, data = train.set, family = "binomial")
+
+#LRT full model vs w/o gilded
+lrtest(without_gilded, without_moderator_gilded)
+# so we determine that we also don't want Moderator
+
+#so final model is the full model minus Gilded and Moderator
+final_model <- without_moderator_gilded
+```
+
+### Table 1.1
+```{r, echo=FALSE}
+msummary(final_model)
+```
+
+## Randomization Tests
+
+In the final model only three variables had p-values that were greater than 0.001: *comments_in_subreddit*, *WKND*, and *relative_sentiment_diff* (with p-values of 0.0336, 0.0051, and 0.0035 respectively). To confirm that these variables were significant, the researchers decided to perform a randomization test on each to determine if the observed coefficients were statistically significant or not. The results of these randomization tests can be seen in Figures *2.1*, *2.2*, and *2.3* below where the red line indicates the observed coefficient and the density plot shows the randomization distribution. If the red line falls far outside of the density plot, this means that the observed coefficient would not be expected to found by chance and is thus statistically significant. While the researchers were only able to run 100 randomization tests (as opposed to the 10,000 that they hoped to) for each variable, this was due to the limit on computing power that they had access to. This explains the imperfect normal distribution of the plots below, but as the observed coefficients for each predictor fell outside of each randomization distribution, the researchers were able to conclude that each of the three predictors were indeed statistically significant, as the initial p-values for each suggested.
+
+### Figure 2.1
+```{r, echo=FALSE}
+#RANDOMIZATION TEST FOR COMMENTS_IN_SUBREDDIT
+# original (observed) slope for comparison
+observed_slope_Comments <- coef(final_model)["comments_in_subreddit"]
+
+# for reproducibility, use set.seed()
+set.seed(2)
+
+# change the number within set.seed if you want different randomly shuffled values
+slopetest2 <- do(100) * (glm(Controversiality ~ WordCount + WKND + 
+    shuffle(comments_in_subreddit) + subreddit_scaled_total_mean + subreddit_diff_QDAP + 
+    subreddit_diff_LM + relative_sentiment_diff, family = "binomial", 
+    data = train.set))
+
+# create a density plot to compare the distribution of slopes get from 
+gf_density(~comments_in_subreddit, data=slopetest2, xlab="Slope Coefficients for Shuffled comments_in_subreddit") %>%
+  gf_vline(xintercept = ~ observed_slope_Comments, color="red")
+```
+
+### Figure 2.2
+```{r, echo=FALSE}
+#RANDOMIZATION TEST FOR WKND
+# original (observed) slope for comparison
+observed_slope_WKND <- coef(final_model)["WKNDTRUE"]
+
+# for reproducibility, use set.seed()
+set.seed(2)
+
+# change the number within set.seed if you want different randomly shuffled values
+slopetest2 <- do(100) * (glm(Controversiality ~ WordCount + shuffle(WKND) + 
+    comments_in_subreddit + subreddit_scaled_total_mean + subreddit_diff_QDAP + 
+    subreddit_diff_LM + relative_sentiment_diff, family = "binomial", 
+    data = train.set))
+
+# create a density plot to compare the distribution of slopes get from 
+gf_density(~WKNDTRUE, data=slopetest2, xlab="Slope Coefficients for Shuffled WKND") %>%
+  gf_vline(xintercept = ~ observed_slope_WKND, color="red")
+```
+
+### Figure 2.3
+```{r, echo=FALSE}
+#RANDOMIZATION TEST FOR RELATIVE_SENTIMENT_DIFF
+# original (observed) slope for comparison
+observed_slope_diff <- coef(final_model)["relative_sentiment_diff"]
+
+# for reproducibility, use set.seed()
+set.seed(2)
+
+# change the number within set.seed if you want different randomly shuffled values
+slopetest3 <- do(100) * (glm(Controversiality ~ WordCount + WKND + 
+    comments_in_subreddit + subreddit_scaled_total_mean + subreddit_diff_QDAP + 
+    subreddit_diff_LM + shuffle(relative_sentiment_diff), family = "binomial", 
+    data = train.set))
+
+# create a density plot to compare the distribution of slopes get from 
+gf_density(~relative_sentiment_diff, data=slopetest3, xlab="Slope Coefficients for Shuffled relative_sentiment_diff") %>%
+  gf_vline(xintercept = ~ observed_slope_diff, color="red")
+```
+
+## Testing Accuracy of Model
+
+With a final model in hand with statistically significant predictors, the researchers then created a function to predict the accuracy of that model using the testing set that was created at the beginning. The researcher's found that the accuracy of the final model was 96.3%, but that the accuracy of the intercept only model was 97.7%.
+
+```{r, echo=FALSE}
+my.expit <- function(x) {
+  y <- exp(x) / (1+exp(x))
+  return(y)
+}
+
+accuracy <- function(model) {
+  
+  predictions <- test.set %>% 
+  mutate(predicted.logodds = predict(model, newdata = test.set),
+         
+         predicted.prob2 = my.expit(predicted.logodds),
+         
+         # change the cutoff HERE
+         classified.outcome = ifelse(predicted.prob2 > 0.5, yes=1, no=0))
+
+  acc <- (tally(Controversiality ~ classified.outcome, data = predictions)[1,1] + 
+            tally(Controversiality ~ classified.outcome, data = predictions)[2,2]) /
+      sum(tally(Controversiality ~ classified.outcome, data = predictions))
+  
+  return(acc)
+}
+
+accuracy(final_model)
+
+intercept_only_accuracy <- 388934 / (388934 + 9064)
+intercept_only_accuracy
+
+```
+
+## Next Steps: Balanced Dataset
+
+Researchers were concerned with the efficacy of a model that predicted a variable with so few observations. The researchers then decided to resample the initial dataframe in order to have more observations where a comment was marked as controversial (as compared with the 2.28% of comments). This new, balanced dataset, contained exactly 50% of comments that were controversial and 50% of comments that were not controversial. The researchers again split the data into training and testing subsets.  
+
+```{r, echo=FALSE}
+#filtering the data 
+controversial <- fullComments %>% 
+  filter(Controversiality == 1)
+
+noncontroversial <- fullComments %>% 
+  filter(Controversiality != 1) 
+
+n <- sample(noncontroversial$X, size = 9064, replace = FALSE)
+
+sampled_noncontroversial <- noncontroversial %>% 
+  filter(noncontroversial$X  %in%  n)
+
+balanced_data <- rbind(controversial, sampled_noncontroversial)
+
+tally(~Controversiality, data=balanced_data)
+```
+
+```{r, include=FALSE}
+#SPLIT DATA INTO TRAIN AND TEST
+set.seed(55)
+# randomly select half of the observations to be in training dataset
+randomnums <- balanced_data %>%
+  mutate(randomnum = rnorm(nrow(balanced_data))) %>%
+  arrange(randomnum) 
+
+balanced_train.set <- randomnums[1:9063,]
+
+# save other half of the observations to be in test dataset
+balanced_test.set <- randomnums[9064:18128,]
+```
+
+## Modeling with Balanced Dataset
+
+The researchers used the same process with the balanced dataset as with the original dataset to determine the best model to predict controversiality. The final model that was determined by the researchers contained 5 predictor variables and the can be seen below in *Table 3.1*. It's important to note that the *WKND* and *comments_in_subreddit* variables were found to be non-statistically significant using this balanced dataset (while they were found to be statistically significant in the researcher's final model using the original dataset). 
+
+```{r, include=FALSE}
+balanced_fullModel <- glm(Controversiality ~ WordCount + WKND + Moderator + comments_in_subreddit + subreddit_scaled_total_mean + subreddit_diff_QDAP + subreddit_diff_LM +  relative_sentiment_diff, data = balanced_train.set, family = "binomial")
+
+msummary(balanced_fullModel)
+
+#LRT full model vs. intercept only 
+lrtest(fullModel)
+
+#full model without the moderator variable
+balanced_without_moderator <- glm(Controversiality ~ WordCount + WKND + comments_in_subreddit + subreddit_scaled_total_mean + subreddit_diff_QDAP + subreddit_diff_LM +  relative_sentiment_diff, data = balanced_train.set, family = "binomial")
+
+#LRT full model vs w/o gilded
+lrtest(balanced_fullModel, balanced_without_moderator)
+# so we determine that we don't want moderator
+
+#w/o moderator or WKND
+balanced_without_moderator_WKND <- glm(Controversiality ~ WordCount + comments_in_subreddit + subreddit_scaled_total_mean + subreddit_diff_QDAP + subreddit_diff_LM +  relative_sentiment_diff, data = balanced_train.set, family = "binomial")
+
+#LRT 
+lrtest(balanced_without_moderator, balanced_without_moderator_WKND)
+# so we determine that we also don't want WKND
+
+# w/o moderator, WKND, or comments
+balanced_without_moderator_WKND_comments <- glm(Controversiality ~ WordCount + subreddit_scaled_total_mean + subreddit_diff_QDAP + subreddit_diff_LM +  relative_sentiment_diff, data = balanced_train.set, family = "binomial")
+
+#LRT
+lrtest(balanced_without_moderator_WKND, balanced_without_moderator_WKND_comments)
+# so we determine that we also don't want comments
+
+#so final model is the full model minus Gilded, Moderator, WKND, and comments_in_subreddit
+balanced_final_model <- balanced_without_moderator_WKND_comments
+lrtest(balanced_final_model)
+```
+
+### Table 3.1 
+
+```{r, echo=FALSE}
+msummary(balanced_final_model)
+```
+
+The researchers then found the accuracy of this model to be 56.4%, as compared with the 50% accuracy of the intercept only model. 
+
+```{r, echo=FALSE}
+my.expit <- function(x) {
+  y <- exp(x) / (1+exp(x))
+  return(y)
+}
+
+balanced_accuracy <- function(model) {
+  
+  predictions <- balanced_test.set %>% 
+  mutate(predicted.logodds = predict(model, newdata = balanced_test.set),
+         
+         predicted.prob2 = my.expit(predicted.logodds),
+         
+         # change the cutoff HERE
+         classified.outcome = ifelse(predicted.prob2 > 0.5, yes=1, no=0))
+
+  acc <- (tally(Controversiality ~ classified.outcome, data = predictions)[1,1] + 
+            tally(Controversiality ~ classified.outcome, data = predictions)[2,2]) /
+      sum(tally(Controversiality ~ classified.outcome, data = predictions))
+  
+  return(acc)
+}
+
+balanced_accuracy(balanced_final_model)
+
+intercept_only_accuracy <- 9064 / (9064 + 9064)
+intercept_only_accuracy
+```
+
+## Additional Insights
+
+The researchers also looked at a correlation plot (*Figure 4.1*) between the quantitative variables in their dataset. *SentimentLM* is highly correlated with *subreddit_diff_LM*, as well as *SentimentQDAP* with *subreddit_diff_QDAP*. This means subreddits are relatively homogeneous and have similar average sentiments. This makes sense intuitively as most subreddits will have a positive and negative comments that will balance out. Another takeaway from *Figure 4.1* is that all nominal sentiment variables are highly correlated, which means that each library is relatively similar and contains much of the same information. 
+
+### Figure 4.1
+```{r, echo=FALSE}
+cor_data <- fullComments[,c(5,7:11, 14:18)]
+cor_data$Score <- as.numeric(cor_data$Score)
+cor_data$WordCount <- as.numeric(cor_data$WordCount)
+cor_data$comments_in_subreddit <- as.numeric(cor_data$comments_in_subreddit)
+
+matrix <- round(cor(cor_data, use = "complete.obs"), 3)
+corrplot(matrix, method = "circle", type = "upper")
+# SentimentLM is highly correlated with subreddit_diff_LM and same for QDAP. This means subreddits are relatively homogenous. 
+# Relative_sentiment_diff and diff for QDAP and LM are very significant 
+# All four nominal sentiments are very correlated with relative sentiment diff. This means something similar to the first point. 
+```
+
+#Discussion
  The objective for this study was to determine whether the sentiment of a comment was a factor in determining how much attention a comment drew. In addition, the researchers looked at other non-sentiment variables to see whether they also proved to be good at predicting how much attention a comment received. The binary variable of controversiality was used as the parameter for “attention a comment receives.”
  
 Researchers found that the sentiment of a comment and other variables associated with each comment included in the final model proved to be only marginally better than the intercept only model in the balanced dataset, and very slightly worse than the intercept only model in the original dataset. 
@@ -41,7 +343,7 @@ The exceedingly low p-values of the coefficients in the final model indicate tha
 In terms of answering the original research objectives, researchers did find an association with sentiment and controversiality, in Reddit comments, but found that sentiment was not an very useful predictor. Given the scope of this study, researchers can conclude that sentiment analysis does provide some insight for predicting controversy, but that information is not comparatively that useful absent further analysis of other variables. Ancillary conclusions include the relative homogeneity of sentiment across subreddits, indicated by the high correlation between relative and absolute sentiment. Additionally, researchers found information provided through sentiment from the four dictionaries to be relatively redundant, as indicated by the high correlation between the sentiment values produced from each of the four dictionaries.
 
 
-##Limitations & Areas for Concern
+#Limitations & Areas for Concern
 The scope of this study is limited by its design in a number of ways. First of all, this is an observation study, not a randomized experiment, thus association between the variables considered can be analyzed, but causal claims would not be appropriate. These limitations can be grouped into three broad categories; computation time, dataset characteristics, and complications from data cleaning. 
 
 One of the primary problems encountered in this research was the lack of computation time available to the researchers. The initial data set included close to 8 million observations of some two dozen columns and running operations on a set of this magnitude rendered unfeasible run times on the hardware used. A more full analysis would have ideally incorporated a greater number of days of comments, but this was simply not feasible given the computational constraints. As such, caution must be taken in broadly applying any of the conclusions of this study outside of the date range analyzed. 
@@ -50,13 +352,9 @@ Second, there are fundamental limit in the substance of the data set that limit 
 
 Lastly, a variety of malformations were present in the original uncleaned data arising from, among other things, unusual or improperly escaped characters in the body of the comment. As such, the incidence of these malformations was greater among longer comments, so the removal of malformed rows increased the proportion of short comments to long comments. Only about 400,000 comments were removed in this fashion, or about 5% of the original data set, so the proportion is not likely to have meaningfully shifted.
 
-##Areas for Further Research
+#Areas for Further Research
     As mentioned above, one of the primary limitations of this study was the limited computing power the researchers had access to. As such, an easy first step for further research would be to repeat the experiment with a computation cluster that allowed for larger scale data analysis. In addition to using a larger subset of each day’s worth of comments, a more full analysis would involve sampling a larger number of days so as to reduce variation from world events and increase the scope of the study. A second key area for expansion and improvement in this study would be to use a purpose built sentiment analysis dictionary designed for analyzing internet comments. Doing so would likely increase the capability of researchers to draw meaningful conclusions about the relationship between sentiment and controversiality. Finally, to more fully expand the scope of this study, data could be tabulated from sites other than Reddit in order to capture a more full picture of the controversy-sentiment relation on internet forums.
     
     
-###References 
+##References 
 Data collected by Reddit User u/glitch_in_the_matrix, hosted on pushshift.io by Jason Baumgartner (http://files.pushshift.io/Reddit/comments/daily/)
-
-###Appendix The appendix can include any additional data exploration and modeling done in the process that was not included in the ”final” models presented in the main report.
-
-
