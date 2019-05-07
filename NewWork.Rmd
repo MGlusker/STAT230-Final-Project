@@ -77,6 +77,7 @@ my.expit <- function(x) {
 
 accuracy <- function(model) {
   
+  #sample from the noncontroversial comments to make a dataset
   n <-  sample(noncontroversial$X, size = 9064, replace = FALSE)
 
   sampled_noncontroversial <- noncontroversial %>% 
@@ -84,7 +85,7 @@ accuracy <- function(model) {
 
   sampled_data <- rbind(controversial, sampled_noncontroversial)
   
-  
+  #sample the sampled_data set to make train and testing set
   filtered <- sampled_data
 
   randomnums <- filtered %>%
@@ -120,7 +121,7 @@ accuracy(kitchenSink)
 accuracy(without_gilded)
 accuracy(without_moderator)
 
-final1_dist <- do(100)*accuracy (final1)
+final1_dist <- do(100)*accuracy(final1)
 gf_density(~accuracy, data=final1_dist)
 a<- mean(final1_dist$accuracy)
 
