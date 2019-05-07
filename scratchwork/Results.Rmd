@@ -296,7 +296,7 @@ intercept_only_accuracy
 
 ## Additional Insights
 
-The researchers also looked at a correlation plot (Figure 4.1) between the quantitative variables in their dataset. *SentimentLM* is highly correlated with *subreddit_diff_LM*, as well as *SentimentQDAP* with *subreddit_diff_QDAP*. This means subreddits are relatively homogenous and have similar average sentiments. This makes sense intituively as most subreddits will have a positive and negative comments that will balance out. Another takeaway from Figure 4.1 is that all nominal snetiment variables are highly correlated, which means that each library is relatively similar and contains much of the same information. 
+The researchers also looked at a correlation plot (*Figure 4.1*) between the quantitative variables in their dataset. *SentimentLM* is highly correlated with *subreddit_diff_LM*, as well as *SentimentQDAP* with *subreddit_diff_QDAP*. This means subreddits are relatively homogeneous and have similar average sentiments. This makes sense intuitively as most subreddits will have a positive and negative comments that will balance out. Another takeaway from *Figure 4.1* is that all nominal sentiment variables are highly correlated, which means that each library is relatively similar and contains much of the same information. 
 
 ### Figure 4.1
 ```{r, echo=FALSE}
