@@ -10,6 +10,7 @@ library(dplyr)
 library(mosaic)
 library(DescTools)
 library(lmtest)
+library(knitr)
 ```
 
 
@@ -76,6 +77,24 @@ my.expit <- function(x) {
 
 accuracy <- function(model) {
   
+  n <-  sample(noncontroversial$X, size = 9064, replace = FALSE)
+
+  sampled_noncontroversial <- noncontroversial %>% 
+    filter(noncontroversial$X  %in%  n)
+
+  sampled_data <- rbind(controversial, sampled_noncontroversial)
+  
+  
+  filtered <- sampled_data
+
+  randomnums <- filtered %>%
+   mutate(randomnum = rnorm(nrow(filtered))) %>%
+   arrange(randomnum) 
+  
+  train.set <- randomnums[1:9064,]
+
+  test.set <- randomnums[9065:18128,]
+  
   predictions <- test.set %>% 
   mutate(predicted.logodds = predict(model, newdata = test.set),
          
@@ -92,20 +111,7 @@ accuracy <- function(model) {
 }
 ```
 
-#test and train sets
-```{r}
-set.seed(3)
-filtered <- sampled_data
 
-
-randomnums <- filtered %>%
-  mutate(randomnum = rnorm(nrow(filtered))) %>%
-  arrange(randomnum) 
-
-train.set <- randomnums[1:9064,]
-
-test.set <- randomnums[9065:18128,]
-```
 
 ```{r}
 accuracy(final1)
@@ -114,6 +120,24 @@ accuracy(kitchenSink)
 accuracy(without_gilded)
 accuracy(without_moderator)
 
+final1_dist <- do(100)*accuracy (final1)
+gf_density(~accuracy, data=final1_dist)
+a<- mean(final1_dist$accuracy)
+
+insig_dist <- do(100)*accuracy(without_insig)
+b <- mean(insig_dist$accuracy)
+
+sink_dist <- do(100)*accuracy(kitchenSink)
+c <- mean(sink_dist$accuracy)
+
+wo_gilded <- do(100)*accuracy(without_gilded)
+d<- mean(wo_gilded$accuracy)
+
+wo_moderator <- do(100)*accuracy(without_moderator)
+e<-mean(wo_moderator$accuracy)
+
+results<- c(a,b,c,d,e)
+kable(results)
 ```
 
 
